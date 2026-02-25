@@ -1,4 +1,4 @@
-package com.example._haejodelivery;
+package com.sparta._9haejodelivery;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
