@@ -39,11 +39,7 @@ public abstract class BaseEntity {
     @Column(name = "deleted_by", length = 30)
     private String deletedBy;
 
-    @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted = false;
-
     public void markAsDeleted(String username) {
-        this.isDeleted = true;
         this.deletedAt = LocalDateTime.now();
         this.deletedBy = username;
     }
