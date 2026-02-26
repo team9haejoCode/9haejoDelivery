@@ -23,8 +23,9 @@ public class StoreEntity {
     @Column(name = "store_name", length = 50, nullable = false)
     private String storeName;
 
-    @Column(name = "category_id", columnDefinition = "uuid")
-    private UUID categoryId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    private CategoryEntity category;
 
     @Column(name = "region_id", columnDefinition = "uuid")
     private UUID regionId;
