@@ -2,17 +2,16 @@ package com.sparta._9haejodelivery.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
 @Entity
 @Table(name = "P_CATEGORY")
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Builder
 public class CategoryEntity {
 
     @Id
@@ -22,4 +21,13 @@ public class CategoryEntity {
 
     @Column(name = "category_name", length = 50, nullable = false, unique = true)
     private String categoryName;
+
+    @Builder
+    public CategoryEntity(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
+    public void updateName(String categoryName) {
+        this.categoryName = categoryName;
+    }
 }
