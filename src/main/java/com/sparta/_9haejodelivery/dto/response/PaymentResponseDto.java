@@ -1,7 +1,7 @@
 package com.sparta._9haejodelivery.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.sparta._9haejodelivery.domain.Payment;
+import com.sparta._9haejodelivery.domain.PaymentEntity;
 import com.sparta._9haejodelivery.domain.enums.PaymentStatus;
 import java.time.LocalDateTime;
 
@@ -17,7 +17,7 @@ public record PaymentResponseDto(
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
         LocalDateTime updatedAt
 ) {
-    public static PaymentResponseDto from(Payment payment) {
+    public static PaymentResponseDto from(PaymentEntity payment) {
         return new PaymentResponseDto(
                 payment.getId(),
                 payment.getOrderId(),

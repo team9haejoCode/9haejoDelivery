@@ -12,7 +12,7 @@ import org.hibernate.annotations.SQLRestriction;
 @AllArgsConstructor
 @Builder
 @SQLRestriction("deleted_at IS NULL") // 팀의 변경 사항에 맞춘 Soft Delete 필터링
-public class Payment extends BaseEntity {
+public class PaymentEntity extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

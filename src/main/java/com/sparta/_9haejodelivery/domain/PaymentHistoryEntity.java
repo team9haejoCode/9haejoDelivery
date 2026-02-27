@@ -12,7 +12,7 @@ import org.hibernate.annotations.SQLRestriction;
 @AllArgsConstructor
 @Builder
 @SQLRestriction("deleted_at IS NULL")
-public class PaymentHistory extends BaseEntity {
+public class PaymentHistoryEntity extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,7 +20,7 @@ public class PaymentHistory extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payment_id", nullable = false)
-    private Payment payment;
+    private PaymentEntity payment;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
