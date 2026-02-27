@@ -24,7 +24,7 @@ public class Review extends  BaseEntity{
     private UUID reviewId;
 
 //    @Column(name="user_id",nullable = false, updatable = false)
-//    @ManyToOne(cascade = CascadeType.ALL)
+//    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 //    private User user;
 //
 //    @Column(name = "order_id", nullable = false, updatable = false)
