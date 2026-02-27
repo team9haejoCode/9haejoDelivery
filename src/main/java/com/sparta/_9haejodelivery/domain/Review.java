@@ -26,9 +26,9 @@ public class Review extends  BaseEntity{
 //    @Column(name="user_id",nullable = false, updatable = false)
 //    @ManyToOne(cascade = CascadeType.ALL)
 //    private User user;
-
+//
 //    @Column(name = "order_id", nullable = false, updatable = false)
-//    @ManyToOne(cascade = CascadeType.ALL)
+//    @OneToOne(cascade = CascadeType.ALL)
 //    private Order order;
 
     @Range(min = 1, max = 5)
