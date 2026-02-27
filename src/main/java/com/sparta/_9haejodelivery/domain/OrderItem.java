@@ -1,4 +1,4 @@
-package com.sparta._9haejodelivery.domain.order;
+package com.sparta._9haejodelivery.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -32,23 +32,25 @@ public class OrderItem extends BaseEntity {
   private Integer quantity;
 
   @Column(nullable = false)
-  private Integer unitPrice; // 주문 시점의 DB 저장된 메뉴 가격 기준(중요)
+  private Integer unitPrice;
+
 
   @Builder
   public OrderItem(
-      Order order,
       Product product,
       Integer quantity,
       Integer unitPrice
   ) {
-    this.order = order;
     this.product = product;
     this.quantity = quantity;
     this.unitPrice = unitPrice;
   }
 
-  // Setter 대신 의도가 담긴 명칭 + default로 entity 패키지 외부 접근 제한
   void assignOrder(Order order) {
     this.order = order;
+  }
+
+  public Integer getSubTotal() {
+    return this.unitPrice * this.quantity;
   }
 }
