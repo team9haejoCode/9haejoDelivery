@@ -9,7 +9,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class UserEntity extends BaseEntity{
+public class User extends BaseEntity{
 
     @Id
     @Column(name = "username", length = 10, nullable = false)
@@ -26,7 +26,7 @@ public class UserEntity extends BaseEntity{
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
-    private UserRole role; //(CUSTOMER, OWNER, MANAGER, MASTER)
+    private UserRole role;
 
     public void updateProfile(String nickname, String password, String address) {
         if (nickname != null) this.nickname = nickname;
