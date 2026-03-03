@@ -3,9 +3,9 @@ package com.sparta._9haejodelivery.service;
 import com.sparta._9haejodelivery.domain.PaymentEntity;
 import com.sparta._9haejodelivery.domain.PaymentHistoryEntity; // 추가
 import com.sparta._9haejodelivery.domain.enums.PaymentStatus;
-import com.sparta._9haejodelivery.dto.request.PaymentRequestDto;
-import com.sparta._9haejodelivery.dto.request.PaymentUpdateRequestDto; // 추가
-import com.sparta._9haejodelivery.dto.response.PaymentResponseDto;
+import com.sparta._9haejodelivery.dto.PaymentRequestDto;
+import com.sparta._9haejodelivery.dto.PaymentResponseDto;
+import com.sparta._9haejodelivery.dto.PaymentUpdateRequestDto;
 import com.sparta._9haejodelivery.repository.PaymentHistoryRepository; // 추가
 import com.sparta._9haejodelivery.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;

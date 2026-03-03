@@ -1,4 +1,4 @@
-package com.sparta._9haejodelivery.dto.request;
+package com.sparta._9haejodelivery.dto;
 
 import com.sparta._9haejodelivery.domain.enums.PaymentStatus;
 

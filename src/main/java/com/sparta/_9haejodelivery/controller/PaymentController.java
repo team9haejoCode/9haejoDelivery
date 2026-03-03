@@ -1,8 +1,8 @@
 package com.sparta._9haejodelivery.controller;
 
-import com.sparta._9haejodelivery.dto.request.PaymentRequestDto;
-import com.sparta._9haejodelivery.dto.request.PaymentUpdateRequestDto;
-import com.sparta._9haejodelivery.dto.response.PaymentResponseDto;
+import com.sparta._9haejodelivery.dto.PaymentRequestDto;
+import com.sparta._9haejodelivery.dto.PaymentResponseDto;
+import com.sparta._9haejodelivery.dto.PaymentUpdateRequestDto;
 import com.sparta._9haejodelivery.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

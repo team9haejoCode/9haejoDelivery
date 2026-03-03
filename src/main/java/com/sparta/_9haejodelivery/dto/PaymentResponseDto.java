@@ -1,4 +1,4 @@
-package com.sparta._9haejodelivery.dto.response;
+package com.sparta._9haejodelivery.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.sparta._9haejodelivery.domain.PaymentEntity;
