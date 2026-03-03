@@ -1,20 +1,17 @@
 package com.sparta._9haejodelivery.domain;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.util.UUID;
 
 @Entity
 @Table(name = "P_STORE")
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Builder
-public class StoreEntity extends BaseEntity {
-
+@SQLRestriction("deleted_at IS NULL")
+public class Store extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "store_id", columnDefinition = "uuid")
@@ -41,4 +38,18 @@ public class StoreEntity extends BaseEntity {
 
     @Column(name = "is_hide")
     private Boolean isHide;
+
+    @Builder
+    public Store(String storeName, CategoryEntity category, UUID regionId, String address, String description, Boolean isHide) {
+        this.storeName = storeName;
+        this.category = category;
+        this.regionId = regionId;
+        this.address = address;
+        this.description = description;
+        this.isHide = isHide != null ? isHide : false;
+    }
+
+    public void updateStore(String storeName) {
+        this.storeName = storeName;
+    }
 }
