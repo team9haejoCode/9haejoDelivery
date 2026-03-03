@@ -18,5 +18,5 @@ public class ProductCreateRequestDto {
     @PositiveOrZero
     private Integer price;
     private String image;
-    private Boolean isSoldOut;
+    private Boolean isSoldout;
 }

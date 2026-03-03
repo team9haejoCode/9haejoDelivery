@@ -10,5 +10,5 @@ public class ProductUpdateRequestDto {
     private String description;
     private Integer price;
     private String image;
-    private Boolean isSoldOut;
+    private Boolean isSoldout;
 }

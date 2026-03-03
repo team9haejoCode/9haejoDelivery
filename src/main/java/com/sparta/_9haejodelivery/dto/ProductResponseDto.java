@@ -13,7 +13,7 @@ public class ProductResponseDto {
     private String description;
     private Integer price;
     private String image;
-    private Boolean isSoldOut;
+    private Boolean isSoldout;
 
     public static ProductResponseDto from(ProductEntity entity) {
         return ProductResponseDto.builder()
@@ -23,7 +23,7 @@ public class ProductResponseDto {
                 .description(entity.getDescription())
                 .price(entity.getPrice())
                 .image(entity.getImage())
-                .isSoldOut(entity.getIsSoldout())
+                .isSoldout(entity.getIsSoldout())
                 .build();
     }
 }
