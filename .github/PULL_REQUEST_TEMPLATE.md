@@ -1,0 +1,37 @@
+## 📌 개요
+
+> 이 PR에서 무엇을 했는지 간략히 설명해주세요.
+
+---
+## ✨ 작업 내용
+
+- User Entity, Dto 생성
+
+---
+## 🔥변경 사항
+
+1️⃣ 주요 변경 파일
+- domain/UserEntity
+- domain/UserRole
+- dto/UserLonginRequestDto
+- dto/UserResponseDto
+- dto/UserSignupRequestDto
+- dto/UserUpdateProfileRequestDto
+
+2️⃣ 핵심 로직 설명
+- .
+
+---
+## 🧪테스트
+
+- [x] 기능 동작 확인
+- [x] 기존 기능 영향 없음 확인
+---
+## ⚠️ 리뷰 포인트
+
+> 예시:  ~에 대한 의견 부탁드립니다. (선택)
+
+---
+## 🗂️ 참고 사항
+
+> 리뷰어가 알아야 할 내용, 논의가 필요한 사항 등을 작성해주세요. (선택)
