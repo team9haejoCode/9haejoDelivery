@@ -20,8 +20,9 @@ public class ProductEntity extends BaseEntity {
     @Column(name = "product_id", updatable = false, nullable = false)
     private UUID productId;
 
-    @Column(name = "store_id", nullable = false)
-    private UUID storeId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id", nullable = false)
+    private StoreEntity store;
 
     @Column(name = "product_name", length = 50, nullable = false)
     private  String productName;
@@ -39,8 +40,8 @@ public class ProductEntity extends BaseEntity {
     private Boolean isSoldout;
 
     @Builder
-    public ProductEntity(UUID storeId, String productName, String description, Integer price, String image, Boolean isSoldout) {
-        this.storeId = storeId;
+    public ProductEntity(StoreEntity store, String productName, String description, Integer price, String image, Boolean isSoldout) {
+        this.store = store;
         this.productName = productName;
         this.description = description;
         this.price = price;
