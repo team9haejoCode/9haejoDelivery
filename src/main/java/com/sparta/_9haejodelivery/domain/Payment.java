@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLRestriction;
 
+import java.util.UUID; // UUID import 필수
+
 @Entity
 @Table(name = "p_payment")
 @Getter
@@ -16,10 +18,11 @@ public class Payment extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id; // 본인 ID는 기존 DB대로 Long 유지
 
+    // Long -> UUID 로 타입 변경
     @Column(name = "order_id", nullable = false)
-    private Long orderId;
+    private UUID orderId; 
 
     @Column(nullable = false)
     private Long amount;
@@ -36,7 +39,6 @@ public class Payment extends BaseEntity {
         this.pgId = pgId;
     }
     
-    // 파라미터로 username을 다시 받아서 BaseEntity로 넘겨줍니다.
     public void cancelPayment(String username) {
         this.status = PaymentStatus.CANCELED;
         super.markAsDeleted(username);
