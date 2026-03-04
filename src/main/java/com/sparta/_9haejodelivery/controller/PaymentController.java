@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/payment") // RESTful 규칙에 따라 "/payments" 로 복수형을 쓰는 것도 좋습니다.
+@RequestMapping("/payment") 
 @RequiredArgsConstructor
 public class PaymentController {
 
@@ -58,7 +58,6 @@ public class PaymentController {
     @DeleteMapping("/{paymentId}")
     public ResponseEntity<ApiResponse<Void>> deletePayment(@PathVariable("paymentId") Long paymentId) {
         paymentService.deletePayment(paymentId);
-        // 삭제의 경우 반환할 데이터가 없으므로 data를 받지 않는 오버로딩된 success 메서드를 사용합니다.
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(HttpStatus.OK, "요청이 정상 처리되었습니다."));
     }
