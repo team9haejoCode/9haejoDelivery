@@ -39,8 +39,7 @@ public abstract class Base {
     @Column(name = "deleted_by", length = 30)
     private String deletedBy;
 
-    public void markAsDeleted(String username) {
+    public void markAsDeleted() {
         this.deletedAt = LocalDateTime.now();
-        this.deletedBy = username;
     }
 }

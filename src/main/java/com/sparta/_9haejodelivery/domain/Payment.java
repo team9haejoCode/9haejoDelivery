@@ -36,9 +36,9 @@ public class Payment extends Base {
         this.pgId = pgId;
     }
     
-    public void cancelPayment(String username) {
+    public void cancelPayment() {
         this.status = PaymentStatus.CANCELED;
-        super.markAsDeleted(username);
+        super.markAsDeleted();
     }
 
     public void updateStatus(PaymentStatus status) {
