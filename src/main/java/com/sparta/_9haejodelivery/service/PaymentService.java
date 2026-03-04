@@ -1,12 +1,12 @@
 package com.sparta._9haejodelivery.service;
 
 import com.sparta._9haejodelivery.domain.Payment;
-import com.sparta._9haejodelivery.domain.PaymentHistory; // 추가
+import com.sparta._9haejodelivery.domain.PaymentHistory; 
 import com.sparta._9haejodelivery.domain.enums.PaymentStatus;
 import com.sparta._9haejodelivery.dto.PaymentRequestDto;
 import com.sparta._9haejodelivery.dto.PaymentResponseDto;
 import com.sparta._9haejodelivery.dto.PaymentUpdateRequestDto;
-import com.sparta._9haejodelivery.repository.PaymentHistoryRepository; // 추가
+import com.sparta._9haejodelivery.repository.PaymentHistoryRepository; 
 import com.sparta._9haejodelivery.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,14 +31,26 @@ public class PaymentService {
                 .build();
 
         Payment savedPayment = paymentRepository.save(payment);
+
+        PaymentHistory history = PaymentHistory.builder()
+                .payment(savedPayment)
+                .orderId(savedPayment.getOrderId())
+                .previousStatus(null)
+                .currentStatus(savedPayment.getStatus())
+                .amount(savedPayment.getAmount())
+                .significant("결제 최초 생성")
+                .build();
+        paymentHistoryRepository.save(history);
+
         return PaymentResponseDto.from(savedPayment);
     }
-
 
     @Transactional
     public PaymentResponseDto updatePaymentStatus(Long paymentId, PaymentUpdateRequestDto requestDto) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 결제 내역을 찾을 수 없습니다. ID: " + paymentId));
+
+        PaymentStatus previousStatus = payment.getStatus();
 
         payment.updateStatus(requestDto.status());
 
@@ -49,7 +61,11 @@ public class PaymentService {
 
         PaymentHistory history = PaymentHistory.builder()
                 .payment(payment)
-                .status(payment.getStatus())
+                .orderId(payment.getOrderId())
+                .previousStatus(previousStatus)
+                .currentStatus(payment.getStatus())
+                .amount(payment.getAmount())
+                .significant("결제 상태 업데이트")
                 .build();
         paymentHistoryRepository.save(history);
 
@@ -69,7 +85,6 @@ public class PaymentService {
     public List<PaymentResponseDto> getPaymentList(Long orderId) {
         List<Payment> payments;
         
-        // orderId 파라미터가 있으면 필터링, 없으면 전체 조회
         if (orderId != null) {
             payments = paymentRepository.findAllByOrderId(orderId);
         } else {
@@ -87,14 +102,17 @@ public class PaymentService {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new IllegalArgumentException("결제 내역을 찾을 수 없습니다. ID: " + paymentId));
 
-        // Security를 꺼둔 상태이므로 임시로 "SYSTEM"이라는 이름을 넘겨줍니다.
-        // 나중에 @AuthenticationPrincipal을 통해 실제 유저 이름을 받아와야 합니다.
-        payment.cancelPayment("SYSTEM"); 
+        PaymentStatus previousStatus = payment.getStatus();
 
-        // 취소 상태도 히스토리에 기록
+        payment.cancelPayment(); 
+
         PaymentHistory history = PaymentHistory.builder()
                 .payment(payment)
-                .status(payment.getStatus())
+                .orderId(payment.getOrderId())
+                .previousStatus(previousStatus)
+                .currentStatus(payment.getStatus()) // CANCELED
+                .amount(payment.getAmount())
+                .significant("결제 삭제 (취소 처리)")
                 .build();
         paymentHistoryRepository.save(history);
     }
