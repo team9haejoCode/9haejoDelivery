@@ -29,7 +29,7 @@ public class Store extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")
-    private UserEntity owner;
+    private User owner;
 
     @Column(name = "address", length = 50)
     private String address;
@@ -41,7 +41,7 @@ public class Store extends BaseEntity {
     private Boolean isHide;
 
     @Builder
-    public Store(String storeName, Category category, UserEntity owner, UUID regionId, String address, String description, Boolean isHide) {
+    public Store(String storeName, Category category, User owner, UUID regionId, String address, String description, Boolean isHide) {
         this.storeName = storeName;
         this.category = category;
         this.owner = owner;
