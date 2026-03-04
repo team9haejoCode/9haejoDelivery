@@ -18,7 +18,7 @@ public class ProductResponseDto {
     public static ProductResponseDto from(ProductEntity entity) {
         return ProductResponseDto.builder()
                 .productId(entity.getProductId().toString())
-                .storeId(entity.getStoreId().toString())
+                .storeId(entity.getStore().toString())
                 .productName(entity.getProductName())
                 .description(entity.getDescription())
                 .price(entity.getPrice())

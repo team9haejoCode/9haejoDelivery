@@ -28,7 +28,7 @@ public class ProductService {
     private final StoreRepository storeRepository;
 
     @Transactional
-    public ProductResponseDto creatProduct(ProductCreateRequestDto requestDto, MultipartFile image) throws IOException {
+    public ProductResponseDto createProduct(ProductCreateRequestDto requestDto, MultipartFile image) throws IOException {
         StoreEntity store = storeRepository.findById(Integer.valueOf(requestDto.getStoreId()))
                 .orElseThrow(() -> new IllegalArgumentException("매장을 찾을 수 없습니다."));
 
