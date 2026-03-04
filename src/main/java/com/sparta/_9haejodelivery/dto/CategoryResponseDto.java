@@ -1,6 +1,6 @@
 package com.sparta._9haejodelivery.dto;
 
-import com.sparta._9haejodelivery.domain.CategoryEntity;
+import com.sparta._9haejodelivery.domain.Category;
 import lombok.Getter;
 
 import java.util.UUID;
@@ -11,7 +11,7 @@ public class CategoryResponseDto {
     private final UUID categoryId;
     private final String categoryName;
 
-    public CategoryResponseDto(CategoryEntity category) {
+    public CategoryResponseDto(Category category) {
         this.categoryId = category.getCategoryId();
         this.categoryName = category.getCategoryName();
     }

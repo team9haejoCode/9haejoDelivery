@@ -22,14 +22,14 @@ public class Store extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
-    private CategoryEntity category;
+    private Category category;
 
     @Column(name = "region_id", columnDefinition = "uuid")
     private UUID regionId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")
-    private UserEntity owner;
+    private User owner;
 
     @Column(name = "address", length = 50)
     private String address;
@@ -41,7 +41,7 @@ public class Store extends BaseEntity {
     private Boolean isHide;
 
     @Builder
-    public Store(String storeName, CategoryEntity category, UserEntity owner, UUID regionId, String address, String description, Boolean isHide) {
+    public Store(String storeName, Category category, User owner, UUID regionId, String address, String description, Boolean isHide) {
         this.storeName = storeName;
         this.category = category;
         this.owner = owner;
@@ -51,7 +51,7 @@ public class Store extends BaseEntity {
         this.isHide = isHide != null ? isHide : false;
     }
 
-    public void updateStore(String storeName, CategoryEntity category, UUID regionId, String address, String description, Boolean isHide) {
+    public void updateStore(String storeName, Category category, UUID regionId, String address, String description, Boolean isHide) {
         if (storeName != null) this.storeName = storeName;
         if (category != null) this.category = category;
         if (regionId != null) this.regionId = regionId;

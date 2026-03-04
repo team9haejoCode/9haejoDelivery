@@ -1,6 +1,6 @@
 package com.sparta._9haejodelivery.service;
 
-import com.sparta._9haejodelivery.domain.CategoryEntity;
+import com.sparta._9haejodelivery.domain.Category;
 import com.sparta._9haejodelivery.dto.CategoryRequestDto;
 import com.sparta._9haejodelivery.dto.CategoryResponseDto;
 import com.sparta._9haejodelivery.repository.CategoryRepository;
@@ -19,7 +19,7 @@ public class CategoryService {
 
     @Transactional
     public CategoryResponseDto createCategory(CategoryRequestDto requestDto) {
-        CategoryEntity category = CategoryEntity.builder()
+        Category category = Category.builder()
                 .categoryName(requestDto.getCategoryName())
                 .build();
         return new CategoryResponseDto(categoryRepository.save(category));
@@ -34,7 +34,7 @@ public class CategoryService {
 
     @Transactional
     public CategoryResponseDto updateCategory(UUID categoryId, CategoryRequestDto requestDto) {
-        CategoryEntity category = categoryRepository.findById(categoryId)
+        Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
         category.updateName(requestDto.getCategoryName());
         return new CategoryResponseDto(category);
@@ -42,7 +42,7 @@ public class CategoryService {
 
     @Transactional
     public void deleteCategory(UUID categoryId) {
-        CategoryEntity category = categoryRepository.findById(categoryId)
+        Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
         categoryRepository.delete(category);
     }
