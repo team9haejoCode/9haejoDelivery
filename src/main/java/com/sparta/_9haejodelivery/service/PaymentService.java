@@ -104,7 +104,9 @@ public class PaymentService {
 
         PaymentStatus previousStatus = payment.getStatus();
 
-        payment.cancelPayment(); 
+        // 팀의 Security 설정이 완료되기 전까지는 임시 유저네임(예: "SYSTEM" 또는 "testUser")을 넘깁니다.
+        // 나중에 Controller에서 @AuthenticationPrincipal로 받아온 이름을 파라미터로 넘겨주면 완벽합니다.
+        payment.cancelPayment("SYSTEM"); 
 
         PaymentHistory history = PaymentHistory.builder()
                 .payment(payment)

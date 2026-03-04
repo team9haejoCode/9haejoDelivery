@@ -11,8 +11,8 @@ import org.hibernate.annotations.SQLRestriction;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@SQLRestriction("deleted_at IS NULL") // 팀의 변경 사항에 맞춘 Soft Delete 필터링
-public class Payment extends Base {
+@SQLRestriction("deleted_at IS NULL")
+public class Payment extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,9 +36,10 @@ public class Payment extends Base {
         this.pgId = pgId;
     }
     
-    public void cancelPayment() {
+    // 파라미터로 username을 다시 받아서 BaseEntity로 넘겨줍니다.
+    public void cancelPayment(String username) {
         this.status = PaymentStatus.CANCELED;
-        super.markAsDeleted();
+        super.markAsDeleted(username);
     }
 
     public void updateStatus(PaymentStatus status) {

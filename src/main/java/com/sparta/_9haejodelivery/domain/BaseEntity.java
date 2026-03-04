@@ -41,7 +41,8 @@ public abstract class BaseEntity {
     @Column(name = "deleted_by", length = 30)
     private String deletedBy;
 
-    public void markAsDeleted() {
+    public void markAsDeleted(String username) {
         this.deletedAt = LocalDateTime.now();
+        this.deletedBy = username;
     }
 }
