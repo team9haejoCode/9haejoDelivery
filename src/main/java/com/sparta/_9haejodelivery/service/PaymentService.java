@@ -31,27 +31,17 @@ public class PaymentService {
                 .build();
 
         Payment savedPayment = paymentRepository.save(payment);
-
-        PaymentHistory history = PaymentHistory.builder()
-                .payment(savedPayment)
-                .orderId(savedPayment.getOrderId())
-                .previousStatus(null)
-                .currentStatus(savedPayment.getStatus())
-                .amount(savedPayment.getAmount())
-                .significant("결제 최초 생성")
-                .build();
-        paymentHistoryRepository.save(history);
+        saveHistory(savedPayment, null, "결제 최초 생성");
 
         return PaymentResponseDto.from(savedPayment);
     }
 
     @Transactional
-    public PaymentResponseDto updatePaymentStatus(Long paymentId, PaymentUpdateRequestDto requestDto) {
+    public PaymentResponseDto updatePaymentStatus(UUID paymentId, PaymentUpdateRequestDto requestDto) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 결제 내역을 찾을 수 없습니다. ID: " + paymentId));
 
         PaymentStatus previousStatus = payment.getStatus();
-
         payment.updateStatus(requestDto.status());
 
         if (requestDto.status() == PaymentStatus.COMPLETED) {
@@ -59,22 +49,13 @@ public class PaymentService {
             payment.completePayment(fakePgId);
         }
 
-        PaymentHistory history = PaymentHistory.builder()
-                .payment(payment)
-                .orderId(payment.getOrderId())
-                .previousStatus(previousStatus)
-                .currentStatus(payment.getStatus())
-                .amount(payment.getAmount())
-                .significant("결제 상태 업데이트")
-                .build();
-        paymentHistoryRepository.save(history);
-
+        saveHistory(payment, previousStatus, "결제 상태 업데이트");
         return PaymentResponseDto.from(payment);
     }
 
     // 1. 단건 조회 (GET)
     @Transactional(readOnly = true)
-    public PaymentResponseDto getPayment(Long paymentId) {
+    public PaymentResponseDto getPayment(UUID paymentId) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new IllegalArgumentException("결제 내역을 찾을 수 없습니다. ID: " + paymentId));
         return PaymentResponseDto.from(payment);
@@ -82,15 +63,13 @@ public class PaymentService {
 
     // 2. 다건 조회 (GET)
     @Transactional(readOnly = true)
-    public List<PaymentResponseDto> getPaymentList(Long orderId) {
+    public List<PaymentResponseDto> getPaymentList(UUID orderId) {
         List<Payment> payments;
-        
         if (orderId != null) {
             payments = paymentRepository.findAllByOrderId(orderId);
         } else {
             payments = paymentRepository.findAll();
         }
-
         return payments.stream()
                 .map(PaymentResponseDto::from)
                 .toList();
@@ -98,23 +77,24 @@ public class PaymentService {
 
     // 3. 결제 삭제/취소 (DELETE)
     @Transactional
-    public void deletePayment(Long paymentId) {
+    public void deletePayment(UUID paymentId, String username) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new IllegalArgumentException("결제 내역을 찾을 수 없습니다. ID: " + paymentId));
 
         PaymentStatus previousStatus = payment.getStatus();
+        payment.cancelPayment(username); 
 
-        // 팀의 Security 설정이 완료되기 전까지는 임시 유저네임(예: "SYSTEM" 또는 "testUser")을 넘깁니다.
-        // 나중에 Controller에서 @AuthenticationPrincipal로 받아온 이름을 파라미터로 넘겨주면 완벽합니다.
-        payment.cancelPayment("SYSTEM"); 
+        saveHistory(payment, previousStatus, "결제 삭제 (취소 처리)");
+    }
 
+    private void saveHistory(Payment payment, PaymentStatus previousStatus, String significant) {
         PaymentHistory history = PaymentHistory.builder()
                 .payment(payment)
                 .orderId(payment.getOrderId())
                 .previousStatus(previousStatus)
-                .currentStatus(payment.getStatus()) // CANCELED
+                .currentStatus(payment.getStatus())
                 .amount(payment.getAmount())
-                .significant("결제 삭제 (취소 처리)")
+                .significant(significant)
                 .build();
         paymentHistoryRepository.save(history);
     }

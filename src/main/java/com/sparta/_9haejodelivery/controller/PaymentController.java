@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/payment") 
@@ -29,7 +30,7 @@ public class PaymentController {
 
     // 2. 결제 단건 조회 API (GET)
     @GetMapping("/{paymentId}")
-    public ResponseEntity<ApiResponse<PaymentResponseDto>> getPayment(@PathVariable("paymentId") Long paymentId) {
+    public ResponseEntity<ApiResponse<PaymentResponseDto>> getPayment(@PathVariable("paymentId") UUID paymentId) {
         PaymentResponseDto responseDto = paymentService.getPayment(paymentId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(HttpStatus.OK, "결제 단건 조회 성공", responseDto));
@@ -38,7 +39,7 @@ public class PaymentController {
     // 3. 결제 목록 조회 API (GET)
     @GetMapping
     public ResponseEntity<ApiResponse<List<PaymentResponseDto>>> getPaymentList(
-            @RequestParam(value = "orderId", required = false) Long orderId) {
+            @RequestParam(value = "orderId", required = false) UUID orderId) {
         List<PaymentResponseDto> responseList = paymentService.getPaymentList(orderId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(HttpStatus.OK, "결제 목록 조회 성공", responseList));
@@ -47,7 +48,7 @@ public class PaymentController {
     // 4. 결제 상태 변경 API (PATCH)
     @PatchMapping("/{paymentId}")
     public ResponseEntity<ApiResponse<PaymentResponseDto>> updatePaymentStatus(
-            @PathVariable("paymentId") Long paymentId,
+            @PathVariable("paymentId") UUID paymentId,
             @RequestBody PaymentUpdateRequestDto requestDto) {
         PaymentResponseDto responseDto = paymentService.updatePaymentStatus(paymentId, requestDto);
         return ResponseEntity.status(HttpStatus.OK)
@@ -56,8 +57,8 @@ public class PaymentController {
 
     // 5. 결제 삭제 API (DELETE)
     @DeleteMapping("/{paymentId}")
-    public ResponseEntity<ApiResponse<Void>> deletePayment(@PathVariable("paymentId") Long paymentId) {
-        paymentService.deletePayment(paymentId);
+    public ResponseEntity<ApiResponse<Void>> deletePayment(@PathVariable("paymentId") UUID paymentId) {
+        paymentService.deletePayment(paymentId, null);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(HttpStatus.OK, "요청이 정상 처리되었습니다."));
     }

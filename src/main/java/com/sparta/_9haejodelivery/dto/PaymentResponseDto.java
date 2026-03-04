@@ -4,11 +4,12 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.sparta._9haejodelivery.domain.Payment;
 import com.sparta._9haejodelivery.domain.enums.PaymentStatus;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public record PaymentResponseDto(
-        Long paymentId, 
-        Long orderId,
-        Long amount,
+        UUID paymentId, 
+        UUID orderId,
+        int amount,
         PaymentStatus status,
         
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")

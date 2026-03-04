@@ -1,6 +1,8 @@
 package com.sparta._9haejodelivery.dto;
 
+import java.util.UUID;
+
 public record PaymentRequestDto(
-        Long orderId,
-        Long amount
+        UUID orderId,
+        int amount
 ) {}

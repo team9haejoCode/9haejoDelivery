@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLRestriction;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "p_payment_history")
 @Getter
@@ -15,15 +17,16 @@ import org.hibernate.annotations.SQLRestriction;
 public class PaymentHistory extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Change to UUID if following the spec strictly
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "payment_history_id")
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payment_id", nullable = false)
     private Payment payment;
 
     @Column(name = "order_id", nullable = false)
-    private Long orderId;
+    private UUID orderId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "previous_status")
@@ -33,9 +36,9 @@ public class PaymentHistory extends BaseEntity {
     @Column(name = "current_status", nullable = false)
     private PaymentStatus currentStatus;
 
-    @Column(name = "significant", length = 100)
-    private String significant;
-
     @Column(nullable = false)
-    private Long amount;
+    private int amount;
+
+    @Column(length = 100)
+    private String significant;
 }
