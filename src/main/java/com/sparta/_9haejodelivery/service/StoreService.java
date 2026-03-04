@@ -1,6 +1,6 @@
 package com.sparta._9haejodelivery.service;
 
-import com.sparta._9haejodelivery.domain.CategoryEntity;
+import com.sparta._9haejodelivery.domain.Category;
 import com.sparta._9haejodelivery.domain.Store;
 import com.sparta._9haejodelivery.dto.StoreRequestDto;
 import com.sparta._9haejodelivery.dto.StoreResponseDto;
@@ -29,7 +29,7 @@ public class StoreService {
 
     @Transactional
     public StoreResponseDto createStore(StoreRequestDto requestDto) {
-        CategoryEntity category = categoryRepository.findById(requestDto.getCategoryId())
+        Category category = categoryRepository.findById(requestDto.getCategoryId())
                 .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
 
         Store store = Store.builder()
@@ -52,7 +52,7 @@ public class StoreService {
 
     @Transactional(readOnly = true)
     public Page<StoreResponseDto> getStoresByCategory(String categoryName, int page, int size, String sortDirection) {
-        CategoryEntity category = categoryRepository.findByCategoryName(categoryName)
+        Category category = categoryRepository.findByCategoryName(categoryName)
                 .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
         Pageable pageable = buildPageable(page, size, sortDirection);
 
@@ -78,7 +78,7 @@ public class StoreService {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new IllegalArgumentException("매장을 찾을 수 없습니다."));
 
-        CategoryEntity category = null;
+        Category category = null;
         if (requestDto.getCategoryId() != null) {
             category = categoryRepository.findById(requestDto.getCategoryId())
                     .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));

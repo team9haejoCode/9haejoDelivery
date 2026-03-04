@@ -12,7 +12,7 @@ import java.util.UUID;
 @Table(name = "P_CATEGORY")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class CategoryEntity {
+public class Category {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -23,7 +23,7 @@ public class CategoryEntity {
     private String categoryName;
 
     @Builder
-    public CategoryEntity(String categoryName) {
+    public Category(String categoryName) {
         this.categoryName = categoryName;
     }
 

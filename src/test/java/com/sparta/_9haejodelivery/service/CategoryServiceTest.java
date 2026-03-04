@@ -1,6 +1,6 @@
 package com.sparta._9haejodelivery.service;
 
-import com.sparta._9haejodelivery.domain.CategoryEntity;
+import com.sparta._9haejodelivery.domain.Category;
 import com.sparta._9haejodelivery.dto.CategoryRequestDto;
 import com.sparta._9haejodelivery.dto.CategoryResponseDto;
 import com.sparta._9haejodelivery.repository.CategoryRepository;
@@ -37,8 +37,8 @@ class CategoryServiceTest {
         return dto;
     }
 
-    private CategoryEntity createEntity(String name) {
-        CategoryEntity entity = CategoryEntity.builder()
+    private Category createEntity(String name) {
+        Category entity = Category.builder()
                 .categoryName(name)
                 .build();
         ReflectionTestUtils.setField(entity, "categoryId", UUID.randomUUID());
@@ -50,22 +50,22 @@ class CategoryServiceTest {
     void createCategory_success() {
         // given
         CategoryRequestDto requestDto = createRequestDto("한식");
-        CategoryEntity savedEntity = createEntity("한식");
-        given(categoryRepository.save(any(CategoryEntity.class))).willReturn(savedEntity);
+        Category savedEntity = createEntity("한식");
+        given(categoryRepository.save(any(Category.class))).willReturn(savedEntity);
 
         // when
         CategoryResponseDto result = categoryService.createCategory(requestDto);
 
         // then
         assertThat(result.getCategoryName()).isEqualTo("한식");
-        verify(categoryRepository).save(any(CategoryEntity.class));
+        verify(categoryRepository).save(any(Category.class));
     }
 
     @Test
     @DisplayName("카테고리 전체 조회 성공")
     void getCategories_success() {
         // given
-        List<CategoryEntity> entities = List.of(
+        List<Category> entities = List.of(
                 createEntity("한식"),
                 createEntity("중식")
         );
@@ -85,7 +85,7 @@ class CategoryServiceTest {
     void updateCategory_success() {
         // given
         UUID categoryId = UUID.randomUUID();
-        CategoryEntity entity = createEntity("한식");
+        Category entity = createEntity("한식");
         CategoryRequestDto requestDto = createRequestDto("중식");
         given(categoryRepository.findById(categoryId)).willReturn(Optional.of(entity));
 
@@ -115,7 +115,7 @@ class CategoryServiceTest {
     void deleteCategory_success() {
         // given
         UUID categoryId = UUID.randomUUID();
-        CategoryEntity entity = createEntity("한식");
+        Category entity = createEntity("한식");
         given(categoryRepository.findById(categoryId)).willReturn(Optional.of(entity));
 
         // when
