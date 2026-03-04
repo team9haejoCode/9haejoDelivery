@@ -1,8 +1,18 @@
 package com.sparta._9haejodelivery.repository;
 
-import com.sparta._9haejodelivery.domain.StoreEntity;
+import com.sparta._9haejodelivery.domain.Category;
+import com.sparta._9haejodelivery.domain.Store;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-// TODO: product 개발을 위한 임시 파일 추후 변경/삭제
-public interface StoreRepository extends JpaRepository<StoreEntity, Integer> {
+import java.util.UUID;
+
+public interface StoreRepository extends JpaRepository<Store, UUID> {
+
+    Page<Store> findByIsHideFalse(Pageable pageable);
+
+    Page<Store> findByCategoryAndIsHideFalse(Category category, Pageable pageable);
+
+    Page<Store> findByRegionIdAndIsHideFalse(UUID regionId, Pageable pageable);
 }
