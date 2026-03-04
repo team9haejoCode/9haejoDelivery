@@ -12,7 +12,7 @@ import org.hibernate.annotations.SQLRestriction;
 @AllArgsConstructor
 @Builder
 @SQLRestriction("deleted_at IS NULL")
-public class PaymentHistory extends BaseEntity {
+public class PaymentHistory extends Base {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
