@@ -11,9 +11,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+//todo: 반환타입 확인, 현재 테스트를 위해 필요한 부분 직접 받는 방식으로 임시 작성 예정-> 수정 예정
+//todo: 현재 테스트를 위해 필요한 부분 직접 받는 방식으로 임시 작성 예정 - details 쿼리 파라미터로 입력받는 방향
 @Tag(name = "Review",description="리뷰관련 API")
 @RestController
 @RequiredArgsConstructor
@@ -21,13 +25,12 @@ import java.util.UUID;
 public class ReviewController {
     private final ReviewService reviewService;
 
-    //todo: 반환타입 확인
-    //post /reviews : 생성
+    //post /reviews: 생성
     @Operation(summary = "리뷰 작성")
     @PostMapping("/")
-    public ResponseEntity<String> createReview(@RequestBody ReviewCreateRequestDTO req) {
+    public ResponseEntity<String> createReview(@RequestBody ReviewCreateRequestDTO req) throws AccessDeniedException {
         UserDetails userDetails=null;//todo: 보안부분 연동 후 details 가져오도록 수정
-        reviewService.createReview(req,userDetails);
+        reviewService.createReview(req, userDetails.getUsername());
         return ResponseEntity.ok().body("리뷰가 작성되었습니다.");
     }
 
@@ -39,42 +42,46 @@ public class ReviewController {
                     "3. body에 값이 없으면 전체 조회")
     @GetMapping("/")
     public ResponseEntity<?> getReviews(@RequestBody Map<String,Object> req) {
+        UserDetails userDetails=null;
         if (req.containsKey("reviewId")) {
             return ResponseEntity.ok()
                     .body(reviewService
                             .findReviewById(UUID
                                     .fromString(req.get("reviewId").toString())));
-        }/*else if(req.containsKey("storeId")){
+        }else if(req.containsKey("storeId")){
             return ResponseEntity.ok().body(
                     reviewService.findReviewsByStoreId(
                             UUID.fromString(req.get("storeId").toString())));
-        }*/ else{
+        } else{ //전체 리뷰 조회는 관리자 권한 확인 후 진행
             return ResponseEntity.ok().body(reviewService.findAllReviews());
         }
     }
 
-//    @Operation(summary = "작성한 리뷰 조회")
-//    @GetMapping("/myReviews")
-//    public ResponseEntity<ReviewResponseDTO> getMyReviews() {   //todo: 보안연동 후 수정
-//        UserDetails userDetails=null;
-//        return ResponseEntity.ok().body(reviewService.findMyReviews(userDetails));
-//    }
+    @Operation(summary = "작성한 리뷰 조회")
+    @GetMapping("/myReviews")
+    public ResponseEntity<List<ReviewResponseDTO>> getMyReviews() {
+        UserDetails userDetails=null; //todo: 보안연동 후 수정
+        return ResponseEntity.ok().body(reviewService.findMyReviews(userDetails.getUsername()));
+    }
 
     //patch /reviews/{reviewId} : 수정
     @Operation(summary = "리뷰 수정")
     @PatchMapping("/{reviewId}")
-    public ResponseEntity<String> updateReview(@PathVariable UUID reviewId, @RequestBody ReviewUpdateDTO req) {
+    public ResponseEntity<String> updateReview(@PathVariable UUID reviewId,
+                                               @RequestBody ReviewUpdateDTO req)
+            throws AccessDeniedException {
         UserDetails userDetails=null;   //todo: 보안연동 후 수정
-        reviewService.updateReview(reviewId, req,userDetails);
+        reviewService.updateReview(reviewId, req, userDetails.getUsername());
         return ResponseEntity.ok().body("리뷰가 수정되었습니다.");
     }
 
     //delete /reviews/{reviewId} : 소프트 삭제
     @Operation(summary = "리뷰 삭제", description = "소프트 삭제")
     @DeleteMapping("/{reviewId}")
-    public ResponseEntity<String> deleteReview(@PathVariable UUID reviewId) {
+    public ResponseEntity<String> deleteReview(@PathVariable UUID reviewId)
+            throws AccessDeniedException {
         UserDetails userDetails=null;   //todo: 보안연동 후 수정
-        reviewService.deleteReview(reviewId,userDetails);
+        reviewService.deleteReview(reviewId,userDetails.getUsername());
         return ResponseEntity.ok().body("리뷰가 삭제되었습니다.");
     }
 }
