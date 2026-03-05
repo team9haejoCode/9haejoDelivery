@@ -1,7 +1,7 @@
 package com.sparta._9haejodelivery.service;
 
-import com.sparta._9haejodelivery.domain.ProductEntity;
-import com.sparta._9haejodelivery.domain.StoreEntity;
+import com.sparta._9haejodelivery.domain.Product;
+import com.sparta._9haejodelivery.domain.Store;
 import com.sparta._9haejodelivery.dto.ProductCreateRequestDto;
 import com.sparta._9haejodelivery.dto.ProductResponseDto;
 import com.sparta._9haejodelivery.dto.ProductUpdateRequestDto;
@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 
 import java.io.IOException;
 import java.util.List;
@@ -29,12 +28,12 @@ public class ProductService {
 
     @Transactional
     public ProductResponseDto createProduct(ProductCreateRequestDto requestDto, MultipartFile image) throws IOException {
-        StoreEntity store = storeRepository.findById(Integer.valueOf(requestDto.getStoreId()))
+        Store store = storeRepository.findById(UUID.fromString(requestDto.getStoreId()))
                 .orElseThrow(() -> new IllegalArgumentException("매장을 찾을 수 없습니다."));
 
         String imagePath = localFileService.saveFile(image);
 
-        ProductEntity product = ProductEntity.builder()
+        Product product = Product.builder()
                 .store(store)
                 .productName(requestDto.getProductName())
                 .description(requestDto.getDescription())
@@ -43,13 +42,13 @@ public class ProductService {
                 .isSoldout(requestDto.getIsSoldout())
                 .build();
 
-        ProductEntity savedProduct = productRepository.save(product);
+        Product savedProduct = productRepository.save(product);
         return ProductResponseDto.from(savedProduct);
     }
 
     @Transactional
     public ProductResponseDto updateProduct(UUID productId, ProductUpdateRequestDto requestDto) {
-        ProductEntity product = productRepository.findById(productId)
+        Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
 
         product.updateProduct(
@@ -76,16 +75,15 @@ public class ProductService {
     }
 
     public ProductResponseDto getProductDetail(UUID productId) {
-        ProductEntity product = productRepository.findById(productId)
+        Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
         return ProductResponseDto.from(product);
     }
 
     @Transactional
     public void deleteProduct(UUID productId, String username) {
-        ProductEntity product = productRepository.findById(productId)
+        Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
         product.markAsDeleted(username);
     }
-
 }

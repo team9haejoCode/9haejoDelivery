@@ -1,6 +1,6 @@
 package com.sparta._9haejodelivery.dto;
 
-import com.sparta._9haejodelivery.domain.ProductEntity;
+import com.sparta._9haejodelivery.domain.Product;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -15,7 +15,7 @@ public class ProductResponseDto {
     private String image;
     private Boolean isSoldout;
 
-    public static ProductResponseDto from(ProductEntity entity) {
+    public static ProductResponseDto from(Product entity) {
         return ProductResponseDto.builder()
                 .productId(entity.getProductId().toString())
                 .storeId(entity.getStore().toString())
