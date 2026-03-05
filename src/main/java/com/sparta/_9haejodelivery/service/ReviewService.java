@@ -1,17 +1,16 @@
 package com.sparta._9haejodelivery.service;
 
+import com.sparta._9haejodelivery.domain.Order;
 import com.sparta._9haejodelivery.domain.Review;
 import com.sparta._9haejodelivery.domain.User;
-import com.sparta._9haejodelivery.domain.Order;
 import com.sparta._9haejodelivery.dto.ReviewCreateRequestDTO;
 import com.sparta._9haejodelivery.dto.ReviewResponseDTO;
 import com.sparta._9haejodelivery.dto.ReviewUpdateDTO;
-import com.sparta._9haejodelivery.repository.OrderRepository;
 import com.sparta._9haejodelivery.repository.ReviewRepository;
-import com.sparta._9haejodelivery.repository.UserRepository;
+import com.sparta._9haejodelivery.repository.temp_OrderRepository;
+import com.sparta._9haejodelivery.repository.temp_UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -26,13 +25,13 @@ import java.util.UUID;
 public class ReviewService {
     private final ReviewRepository reviewRepository;
     //todo: 업데이트 후 임시 생성 저장소 사용 부분 수정
-    private final /*UserService*/ UserRepository /*userService*/ userRepository;
-    private final /*OrderService*/ OrderRepository /*orderService*/ orderRepository;
+    private final /*UserService*/ temp_UserRepository /*userService*/ userRepository;
+    private final /*OrderService*/ temp_OrderRepository /*orderService*/ orderRepository;
 
     //todo: 이미 해당 주문에 대해 작성한 리뷰가 있는 경우 처리
     //생성 - ROLE=CUSTOMER 확인 -> 일단 OWNER만 차단하도록, ORDER 정보 추가  /todo: 보안 연동 후 수정
     @PreAuthorize("hasRole('ROLE_CUSTOMER')")
-    public void createReview(ReviewCreateRequestDTO dto, String username) throws AccessDeniedException {
+    public String createReview(ReviewCreateRequestDTO dto, String username) throws AccessDeniedException {
 
         User user=/*userService*/ userRepository.findByUsername(username)
                 .orElseThrow(()->new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
@@ -40,14 +39,16 @@ public class ReviewService {
                 .orElseThrow(()->new IllegalArgumentException("해당 주문 내역을 찾을 수 없습니다."));
 
         //이미 해당 주문에 대해 작성한 리뷰가 있는 경우
-        if(reviewRepository.findByOrder(order)!=null)
+        if(reviewRepository.findByOrder(order).isPresent())
             throw new IllegalStateException("이미 해당 주문에 대해 리뷰를 작성했습니다.");
 
-        reviewRepository.save(Review.builder()
+        Review review = reviewRepository.save(Review.builder()
                 .user(user)
                 .order(order)
                 .rating(new BigDecimal(dto.getRating()))
                 .description(dto.getDescription()).build());//사용자 정보 추가
+
+        return review.getReviewId().toString();
     }
 
     //조회 - body로 데이터 수신, ALL: 매장별 리뷰 확인 가능, CUSTOMER: 작성 리뷰 리스트 조회 가능,
@@ -118,7 +119,7 @@ public class ReviewService {
                     .updatedAt(review.getUpdatedAt())
                     .updatedBy(review.getUpdatedBy()==null ? null :
                             /*userService*/ userRepository.findByUsername(review.getUpdatedBy())
-                            .orElseThrow(()->new IllegalArgumentException("해당 사용자를 찾을 수 없습니다.")))
+                                            .orElseThrow(()->new IllegalArgumentException("해당 사용자를 찾을 수 없습니다.")))
                     .build());
         }
         return reviewList;

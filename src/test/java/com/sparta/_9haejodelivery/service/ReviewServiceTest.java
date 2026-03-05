@@ -4,9 +4,9 @@ import com.sparta._9haejodelivery.domain.*;
 import com.sparta._9haejodelivery.dto.ReviewCreateRequestDTO;
 import com.sparta._9haejodelivery.dto.ReviewResponseDTO;
 import com.sparta._9haejodelivery.dto.ReviewUpdateDTO;
-import com.sparta._9haejodelivery.repository.OrderRepository;
 import com.sparta._9haejodelivery.repository.ReviewRepository;
-import com.sparta._9haejodelivery.repository.UserRepository;
+import com.sparta._9haejodelivery.repository.temp_OrderRepository;
+import com.sparta._9haejodelivery.repository.temp_UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,17 +26,19 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
 class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환경에서 다시 테스트
     @Mock
     private ReviewRepository reviewRepository;
-    private OrderRepository orderRepository;
-    private UserRepository userRepository;
+    private temp_OrderRepository orderRepository;
+    private temp_UserRepository userRepository;
 
     private ReviewService reviewService;
 
@@ -48,8 +50,8 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
 
     @BeforeEach
     void setUp() {
-        userRepository= Mockito.mock(UserRepository.class);
-        orderRepository= Mockito.mock(OrderRepository.class);
+        userRepository= Mockito.mock(temp_UserRepository.class);
+        orderRepository= Mockito.mock(temp_OrderRepository.class);
         reviewRepository= Mockito.mock(ReviewRepository.class);
 
         reviewService=new ReviewService(reviewRepository,userRepository,orderRepository);
@@ -84,7 +86,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
                 .storeName("store")
                 .category(category)
                 .regionId(UUID.nameUUIDFromBytes("region".getBytes()))
-                .ownerId(owner.getUsername())
+                .owner(owner)
                 .address("address")
                 .description("description")
                 .isHide(false).build();
@@ -94,7 +96,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
                 .user(customer)
                 .store(store)
                 .address("address")
-                .status(OrderStatus.DELIVERY_COMPLETED).build();
+                .status(temp_OrderStatus.DELIVERY_COMPLETED).build();
 
         review = Review.builder()
                 .reviewId(UUID.nameUUIDFromBytes("review".getBytes()))
@@ -121,6 +123,8 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
                 .rating("5")
                 .description("good")
                 .build();
+
+        when(reviewRepository.save(any(Review.class))).thenReturn(review);
 
         //when
         reviewService.createReview(dto, customer.getUsername());
