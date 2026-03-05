@@ -1,11 +1,13 @@
 package com.sparta._9haejodelivery.service;
 
 import com.sparta._9haejodelivery.domain.Category;
+import com.sparta._9haejodelivery.domain.Region;
 import com.sparta._9haejodelivery.domain.Store;
 import com.sparta._9haejodelivery.dto.StoreRequestDto;
 import com.sparta._9haejodelivery.dto.StoreResponseDto;
 import com.sparta._9haejodelivery.dto.StoreUpdateRequestDto;
 import com.sparta._9haejodelivery.repository.CategoryRepository;
+import com.sparta._9haejodelivery.repository.RegionRepository;
 import com.sparta._9haejodelivery.repository.StoreRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,6 +36,9 @@ class StoreServiceTest {
 
     @Mock
     private CategoryRepository categoryRepository;
+
+    @Mock
+    private RegionRepository regionRepository;
 
     @InjectMocks
     private StoreService storeService;
@@ -86,8 +91,18 @@ class StoreServiceTest {
                 .categoryName("한식")
                 .build();
 
+        Region region = Region.builder()
+                .regionId(regionId)
+                .city("서울시")
+                .district("강남구")
+                .neighborhood("역삼동")
+                .build();
+
         when(categoryRepository.findById(categoryId))
                 .thenReturn(Optional.of(category));
+
+        when(regionRepository.findById(regionId))
+                .thenReturn(Optional.of(region));
 
         when(storeRepository.save(any(Store.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
@@ -98,6 +113,7 @@ class StoreServiceTest {
         // then
         assertEquals(storeName, response.getStoreName());
         verify(categoryRepository).findById(categoryId);
+        verify(regionRepository).findById(regionId);
         verify(storeRepository).save(any(Store.class));
     }
 
@@ -216,11 +232,8 @@ class StoreServiceTest {
         Page<Store> storePage =
                 new PageImpl<>(List.of(store1, store2));
 
-        when(categoryRepository.findByCategoryName(categoryName))
-                .thenReturn(Optional.of(category));
-
-        when(storeRepository.findByCategoryAndIsHideFalse(
-                eq(category),
+        when(storeRepository.findByCategory_CategoryNameAndIsHideFalse(
+                eq(categoryName),
                 any(Pageable.class)))
                 .thenReturn(storePage);
 
@@ -233,11 +246,8 @@ class StoreServiceTest {
         assertEquals("맛1", result.getContent().get(0).getStoreName());
         assertEquals("한식", result.getContent().get(0).getCategoryName());
 
-        verify(categoryRepository)
-                .findByCategoryName(categoryName);
-
         verify(storeRepository)
-                .findByCategoryAndIsHideFalse(eq(category), any(Pageable.class));
+                .findByCategory_CategoryNameAndIsHideFalse(eq(categoryName), any(Pageable.class));
     }
 
     @Test
@@ -258,11 +268,21 @@ class StoreServiceTest {
                 .categoryName("한식")
                 .build();
 
+        Region region = Region.builder()
+                .regionId(regionId)
+                .city("서울시")
+                .district("강남구")
+                .neighborhood("역삼동")
+                .build();
+
         when(storeRepository.findById(storeId))
                 .thenReturn(Optional.of(store));
 
         when(categoryRepository.findById(categoryId))
                 .thenReturn(Optional.of(category));
+
+        when(regionRepository.findById(regionId))
+                .thenReturn(Optional.of(region));
 
         // when
         StoreResponseDto responseDto = storeService.updateStore(storeId, requestDto);
