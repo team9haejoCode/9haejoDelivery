@@ -20,10 +20,10 @@ public class Review extends  BaseEntity{
     @Column(name = "review_id", nullable = false, updatable = false)
     private UUID reviewId;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne()
     private Order order;
 
     @Range(min = 1, max = 5)

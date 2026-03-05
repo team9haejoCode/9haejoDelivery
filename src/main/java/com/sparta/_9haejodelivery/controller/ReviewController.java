@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -31,12 +30,10 @@ public class ReviewController {
     //post /reviews: 생성
     @Operation(summary = "리뷰 작성")
     @PostMapping("/")
-    public ResponseEntity<ApiResponse<String>> createReview(@RequestBody ReviewCreateRequestDTO req,
+    public ApiResponse<String> createReview(@RequestBody ReviewCreateRequestDTO req,
                                                             @AuthenticationPrincipal UserDetails userDetails) throws AccessDeniedException {
         String reviewId=reviewService.createReview(req, userDetails.getUsername());
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(ApiResponse.success(HttpStatus.CREATED ,"리뷰가 작성되었습니다.",reviewId));
+        return ApiResponse.success(HttpStatus.CREATED ,"리뷰가 작성되었습니다.",reviewId);
     }
 
     //get /reviews : 조회
@@ -46,62 +43,52 @@ public class ReviewController {
                     "2. 매장 검색 기능 " +
                     "3. body에 값이 없으면 전체 조회")
     @GetMapping("/")
-    public ResponseEntity<ApiResponse<?>> getReviews(@RequestBody Map<String,Object> req) {
+    public ApiResponse<?> getReviews(@RequestBody Map<String,Object> req) {
         if (req.containsKey("reviewId")) {
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(ApiResponse.success(HttpStatus.OK ,"리뷰 조회 성공", reviewService
+            return ApiResponse.success(HttpStatus.OK ,"리뷰 조회 성공", reviewService
                             .findReviewById(UUID
-                                    .fromString(req.get("reviewId").toString()))));
+                                    .fromString(req.get("reviewId").toString())));
         }else if(req.containsKey("storeId")){
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(ApiResponse.success(HttpStatus.OK,
+            return ApiResponse.success(HttpStatus.OK,
                             "리뷰 조회 성공",
                             reviewService.findReviewsByStoreId(
-                                    UUID.fromString(req.get("storeId").toString()))));
+                                    UUID.fromString(req.get("storeId").toString())));
         } else{ //전체 리뷰 조회는 관리자 권한 확인 후 진행
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(ApiResponse.success(HttpStatus.OK,
+            return ApiResponse.success(HttpStatus.OK,
                             "리뷰 조회 성공",
-                            reviewService.findAllReviews()));
+                            reviewService.findAllReviews());
         }
     }
 
     @Operation(summary = "작성한 리뷰 조회")
     @GetMapping("/myReviews")
-    public ResponseEntity<ApiResponse<List<ReviewResponseDTO>>> getMyReviews(@AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(ApiResponse.success(HttpStatus.OK,
+    public ApiResponse<List<ReviewResponseDTO>> getMyReviews(@AuthenticationPrincipal UserDetails userDetails) {
+        return ApiResponse.success(HttpStatus.OK,
                         "리뷰 조회 성공",
-                        reviewService.findMyReviews(userDetails.getUsername())));
+                        reviewService.findMyReviews(userDetails.getUsername()));
     }
 
     //patch /reviews/{reviewId} : 수정
     @Operation(summary = "리뷰 수정")
     @PatchMapping("/{reviewId}")
-    public ResponseEntity<ApiResponse<String>> updateReview(@PathVariable String reviewId,
+    public ApiResponse<String> updateReview(@PathVariable String reviewId,
                                                             @RequestBody ReviewUpdateDTO req,
                                                             @AuthenticationPrincipal UserDetails userDetails)
             throws AccessDeniedException {
         reviewService.updateReview(UUID
                         .fromString(reviewId)
                 , req, userDetails.getUsername());
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.success(HttpStatus.OK,
-                        "리뷰가 수정되었습니다.",reviewId));
+        return ApiResponse.success(HttpStatus.OK,
+                        "리뷰가 수정되었습니다.",reviewId);
     }
 
     //delete /reviews/{reviewId} : 소프트 삭제
     @Operation(summary = "리뷰 삭제", description = "소프트 삭제")
     @DeleteMapping("/{reviewId}")
-    public ResponseEntity<ApiResponse<String>> deleteReview(@PathVariable UUID reviewId,
+    public ApiResponse<String> deleteReview(@PathVariable UUID reviewId,
                                                             @AuthenticationPrincipal UserDetails userDetails)
             throws AccessDeniedException {
         reviewService.deleteReview(reviewId,userDetails.getUsername());
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.success(HttpStatus.OK,"리뷰가 삭제되었습니다."));
+        return ApiResponse.success(HttpStatus.OK,"리뷰가 삭제되었습니다.");
     }
 }
