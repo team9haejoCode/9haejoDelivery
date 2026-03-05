@@ -24,8 +24,9 @@ public class Store extends BaseEntity {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @Column(name = "region_id", columnDefinition = "uuid")
-    private UUID regionId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "region_id", nullable = false)
+    private Region region;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")
@@ -41,20 +42,20 @@ public class Store extends BaseEntity {
     private Boolean isHide;
 
     @Builder
-    public Store(String storeName, Category category, User owner, UUID regionId, String address, String description, Boolean isHide) {
+    public Store(String storeName, Category category, User owner, Region region, String address, String description, Boolean isHide) {
         this.storeName = storeName;
         this.category = category;
         this.owner = owner;
-        this.regionId = regionId;
+        this.region = region;
         this.address = address;
         this.description = description;
         this.isHide = isHide != null ? isHide : false;
     }
 
-    public void updateStore(String storeName, Category category, UUID regionId, String address, String description, Boolean isHide) {
+    public void updateStore(String storeName, Category category, Region region, String address, String description, Boolean isHide) {
         if (storeName != null) this.storeName = storeName;
         if (category != null) this.category = category;
-        if (regionId != null) this.regionId = regionId;
+        if (region != null) this.region = region;
         if (address != null) this.address = address;
         if (description != null) this.description = description;
         if (isHide != null) this.isHide = isHide;

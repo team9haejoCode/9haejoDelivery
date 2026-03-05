@@ -3,6 +3,8 @@ package com.sparta._9haejodelivery.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "P_REGION")
 @Getter
@@ -10,8 +12,8 @@ import lombok.*;
 public class Region extends BaseEntity {
 
     @Id
-    @Column(name = "region_id", length = 10, nullable = false)
-    private String regionId;
+    @Column(name = "region_id", columnDefinition = "uuid", nullable = false)
+    private UUID regionId;
 
     @Column(name = "city", length = 20, nullable = false)
     private String city;
@@ -26,7 +28,7 @@ public class Region extends BaseEntity {
     private String postalCode;
 
     @Builder
-    public Region(String regionId, String city, String district, String neighborhood, String postalCode) {
+    public Region(UUID regionId, String city, String district, String neighborhood, String postalCode) {
         this.regionId = regionId;
         this.city = city;
         this.district = district;
