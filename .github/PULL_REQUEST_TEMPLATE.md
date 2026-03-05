@@ -5,27 +5,22 @@
 ---
 ## ✨ 작업 내용
 
-- User Entity, Dto 생성
+-
 
 ---
 ## 🔥변경 사항
 
 1️⃣ 주요 변경 파일
-- domain/UserEntity
-- domain/UserRole
-- dto/UserLonginRequestDto
-- dto/UserResponseDto
-- dto/UserSignupRequestDto
-- dto/UserUpdateProfileRequestDto
+-
 
 2️⃣ 핵심 로직 설명
-- .
+-
 
 ---
 ## 🧪테스트
 
-- [x] 기능 동작 확인
-- [x] 기존 기능 영향 없음 확인
+- [] 기능 동작 확인
+- [] 기존 기능 영향 없음 확인
 ---
 ## ⚠️ 리뷰 포인트
 
