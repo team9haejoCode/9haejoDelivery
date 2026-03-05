@@ -7,8 +7,8 @@ import com.sparta._9haejodelivery.dto.ReviewCreateRequestDTO;
 import com.sparta._9haejodelivery.dto.ReviewResponseDTO;
 import com.sparta._9haejodelivery.dto.ReviewUpdateDTO;
 import com.sparta._9haejodelivery.repository.ReviewRepository;
+import com.sparta._9haejodelivery.repository.UserRepository;
 import com.sparta._9haejodelivery.repository.temp_OrderRepository;
-import com.sparta._9haejodelivery.repository.temp_UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,15 +26,15 @@ import java.util.UUID;
 public class ReviewService {
     private final ReviewRepository reviewRepository;
     //todo: 업데이트 후 임시 생성 저장소 사용 부분 수정
-    private final /*UserService*/ temp_UserRepository /*userService*/ userRepository;
+    private final /*UserService*/ UserRepository /*userService*/ userRepository;
     private final /*OrderService*/ temp_OrderRepository /*orderService*/ orderRepository;
 
     //todo: 이미 해당 주문에 대해 작성한 리뷰가 있는 경우 처리
     //생성 - ROLE=CUSTOMER 확인 -> 일단 OWNER만 차단하도록, ORDER 정보 추가  /todo: 보안 연동 후 수정
     @PreAuthorize("hasRole('ROLE_CUSTOMER')")
-    public String createReview(ReviewCreateRequestDTO dto, String username) throws AccessDeniedException {
+    public String createReview(ReviewCreateRequestDTO dto, String username) {
 
-        User user=/*userService*/ userRepository.findByUsername(username)
+        User user=/*userService*/ userRepository.findById(username)
                 .orElseThrow(()->new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
         Order order=/*orderService*/ orderRepository.findById(dto.getOrderId())
                 .orElseThrow(()->new IllegalArgumentException("해당 주문 내역을 찾을 수 없습니다."));
@@ -82,7 +82,7 @@ public class ReviewService {
 
     //3. 작성한 리뷰 조회
     public Slice<ReviewResponseDTO> findMyReviews(String username, Pageable pageable) {
-        User user=/*userService*/ userRepository.findByUsername(username)
+        User user=/*userService*/ userRepository.findById(username)
                 .orElseThrow(()->new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
         Slice<Review> reviewSlice = reviewRepository.findByUser(user, pageable);
         return reviewSlice.map(ReviewResponseDTO::new);
@@ -97,7 +97,7 @@ public class ReviewService {
     //수정 - 작성자 확인
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_CUSTOMER')")
     public void updateReview(UUID reviewId, ReviewUpdateDTO dto,String username) throws AccessDeniedException {
-        User user=/*userService*/ userRepository.findByUsername(username)
+        User user=/*userService*/ userRepository.findById(username)
                 .orElseThrow(()->new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));  //todo: user서비스 확인 후 수정
         Review review=reviewRepository.findById(reviewId)
                 .orElseThrow(()->new IllegalArgumentException("해당 리뷰를 찾을 수 없습니다."));

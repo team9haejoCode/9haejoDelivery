@@ -7,8 +7,8 @@ import com.sparta._9haejodelivery.dto.ReviewCreateRequestDTO;
 import com.sparta._9haejodelivery.dto.ReviewResponseDTO;
 import com.sparta._9haejodelivery.dto.ReviewUpdateDTO;
 import com.sparta._9haejodelivery.repository.ReviewRepository;
+import com.sparta._9haejodelivery.repository.UserRepository;
 import com.sparta._9haejodelivery.repository.temp_OrderRepository;
-import com.sparta._9haejodelivery.repository.temp_UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -40,7 +40,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
     @Mock
     private ReviewRepository reviewRepository;
     private temp_OrderRepository orderRepository;
-    private temp_UserRepository userRepository;
+    private UserRepository userRepository;
 
     private ReviewService reviewService;
 
@@ -53,7 +53,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
 
     @BeforeEach
     void setUp() {
-        userRepository= Mockito.mock(temp_UserRepository.class);
+        userRepository= Mockito.mock(UserRepository.class);
         orderRepository= Mockito.mock(temp_OrderRepository.class);
         reviewRepository= Mockito.mock(ReviewRepository.class);
 
@@ -120,7 +120,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
     @DisplayName("리뷰 작성 테스트 - 정상처리")
     void createReview() throws AccessDeniedException {
         //given
-        given(userRepository.findByUsername(customer.getUsername())).willReturn(Optional.of(customer));
+        given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
         given(orderRepository.findById(order.getOrderId())).willReturn(Optional.of(order));
 
         ReviewCreateRequestDTO dto = ReviewCreateRequestDTO.builder()
@@ -149,7 +149,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
     @DisplayName("리뷰 작성 테스트 - 사용자 조회 실패")
     void createReview_NotFoundUser() {
         //given
-        given(userRepository.findByUsername(anyString())).willReturn(Optional.empty());
+        given(userRepository.findById(anyString())).willReturn(Optional.empty());
 
         ReviewCreateRequestDTO dto = ReviewCreateRequestDTO.builder()
                 .orderId(order.getOrderId())
@@ -167,7 +167,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
     @DisplayName("리뷰 작성 테스트 - 주문 조회 실패")
     void createReview_NotFoundOrder() {
         //given
-        given(userRepository.findByUsername(customer.getUsername())).willReturn(Optional.of(customer));
+        given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
         given(orderRepository.findById(order.getOrderId())).willReturn(Optional.empty());
 
         ReviewCreateRequestDTO dto = ReviewCreateRequestDTO.builder()
@@ -186,7 +186,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
     @DisplayName("리뷰 작성 테스트 - 이미 해당 주문에 대한 리뷰를 작성했던 경우")
     void createReview_ExistReview() {
         //given
-        given(userRepository.findByUsername(customer.getUsername())).willReturn(Optional.of(customer));
+        given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
         given(orderRepository.findById(order.getOrderId())).willReturn(Optional.of(order));
         given(reviewRepository.findByOrder(order)).willReturn(Optional.of(review));
 
@@ -235,7 +235,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
         List<Review> reviews = List.of(review);
         Slice<Review> slice = new SliceImpl<>(reviews, pageable, false);
 
-        given(userRepository.findByUsername(customer.getUsername())).willReturn(Optional.of(customer));
+        given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
         given(reviewRepository.findByUser(customer,pageable)).willReturn(slice);
 
         //when & then
@@ -262,7 +262,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
     void updateReview() throws AccessDeniedException {
         //given
         given(reviewRepository.findById(review.getReviewId())).willReturn(Optional.of(review));
-        given(userRepository.findByUsername(customer.getUsername())).willReturn(Optional.of(customer));
+        given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
         ReviewUpdateDTO dto = ReviewUpdateDTO.builder()
                 .rating("1")
                 .description("bad")
@@ -283,7 +283,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
     @DisplayName("리뷰 수정 테스트-사용자 탐색 실패")
     void updateReview_NotFoundUser() {
         //given
-        given(userRepository.findByUsername(customer.getUsername())).willReturn(Optional.empty());
+        given(userRepository.findById(customer.getUsername())).willReturn(Optional.empty());
         ReviewUpdateDTO dto = ReviewUpdateDTO.builder()
                 .rating("1")
                 .description("bad")
@@ -298,7 +298,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
     @DisplayName("리뷰 수정 테스트-리뷰 탐색 실패")
     void updateReview_NotFoundReview() {
         //given
-        given(userRepository.findByUsername(customer.getUsername())).willReturn(Optional.of(customer));
+        given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
         given(reviewRepository.findById(review.getReviewId())).willReturn(Optional.empty());
         ReviewUpdateDTO dto = ReviewUpdateDTO.builder()
                 .rating("1")
