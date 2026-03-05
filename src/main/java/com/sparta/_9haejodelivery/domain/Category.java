@@ -24,10 +24,21 @@ public class Category {
 
     @Builder
     public Category(String categoryName) {
-        this.categoryName = categoryName;
+        validateName(categoryName);
+        this.categoryName = categoryName.toLowerCase();
     }
 
     public void updateName(String categoryName) {
-        this.categoryName = categoryName;
+        validateName(categoryName);
+        this.categoryName = categoryName.toLowerCase();
+    }
+
+    private void validateName(String categoryName) {
+        if (categoryName == null || categoryName.isBlank()) {
+            throw new IllegalArgumentException("카테고리 이름은 비어 있을 수 없습니다.");
+        }
+        if (categoryName.length() > 50) {
+            throw new IllegalArgumentException("카테고리 이름은 50자를 초과할 수 없습니다.");
+        }
     }
 }
