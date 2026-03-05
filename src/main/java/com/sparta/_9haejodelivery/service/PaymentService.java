@@ -15,7 +15,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -45,11 +44,20 @@ public class PaymentService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 결제 내역을 찾을 수 없습니다. ID: " + paymentId));
 
         PaymentStatus previousStatus = payment.getStatus();
-        payment.updateStatus(requestDto.status());
+        PaymentStatus requestedStatus = requestDto.status();
 
-        if (requestDto.status() == PaymentStatus.COMPLETED) {
+        if (requestedStatus == PaymentStatus.COMPLETED) {
             String fakePgId = "toss_mock_" + UUID.randomUUID().toString().substring(0, 8);
             payment.completePayment(fakePgId);
+            
+        } else if (requestedStatus == PaymentStatus.CANCELED) {
+            payment.cancelPayment("SYSTEM_UPDATE"); 
+            
+        } else if (requestedStatus == PaymentStatus.FAILED) {
+            payment.failedPayment("SYSTEM_UPDATE");
+            
+        } else {
+            throw new IllegalArgumentException("Invalid status transition requested: " + requestedStatus);
         }
 
         saveHistory(payment, previousStatus, "결제 상태 업데이트");
@@ -70,17 +78,14 @@ public class PaymentService {
         Page<Payment> paymentPage;
         
         if (orderId != null) {
-            // 주문 ID가 있으면 해당 주문의 결제 내역만 페이징 처리하여 조회
             paymentPage = paymentRepository.findAllByOrderId(orderId, pageable);
         } else {
-            // 주문 ID가 없으면 전체 결제 내역을 페이징 처리하여 조회
             paymentPage = paymentRepository.findAll(pageable);
         }
-        
-        // Page 객체는 자체적으로 map()을 지원하므로 stream 변환이 필요 없습니다!
+
         return paymentPage.map(PaymentResponseDto::from);
     }
-    
+
     // 3. 결제 삭제/취소 (DELETE)
     @Transactional
     public void deletePayment(UUID paymentId, String username) {

@@ -34,18 +34,32 @@ public class Payment extends BaseEntity {
     @Column(name = "pg_id", length = 30)
     private String pgId;
 
-
     public void completePayment(String pgId) {
+        if (this.status != PaymentStatus.PENDING) {
+            throw new IllegalStateException("Only PENDING payments can be completed. Current status: " + this.status);
+        }
+        
         this.status = PaymentStatus.COMPLETED;
         this.pgId = pgId;
     }
     
     public void cancelPayment(String username) {
+        if (this.status != PaymentStatus.PENDING) {
+            throw new IllegalStateException("Only PENDING payments can be canceled. Current status: " + this.status);
+        }
+
         this.status = PaymentStatus.CANCELED;
-        super.markAsDeleted(username); //
+        super.markAsDeleted(username);
     }
 
-    public void updateStatus(PaymentStatus status) {
-        this.status = status;
+    public void failedPayment(String username) {
+        if (this.status != PaymentStatus.PENDING) {
+            throw new IllegalStateException("Only PENDING payments can be failed. Current status: " + this.status);
+        }
+
+        this.status = PaymentStatus.FAILED;
+        super.markAsDeleted(username);
     }
+
+
 }
