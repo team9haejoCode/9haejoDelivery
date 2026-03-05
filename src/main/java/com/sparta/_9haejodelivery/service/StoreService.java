@@ -65,10 +65,10 @@ public class StoreService {
     }
 
     @Transactional(readOnly = true)
-    public Page<StoreResponseDto> getStoresByDistrict(String district, int page, int size, String sortDirection) {
+    public Page<StoreResponseDto> getStoresBySigungu(String sigungu, int page, int size, String sortDirection) {
         Pageable pageable = buildPageable(page, size, sortDirection);
         return storeRepository
-                .findByRegion_DistrictAndIsHideFalse(district, pageable)
+                .findByRegion_SigunguAndIsHideFalse(sigungu, pageable)
                 .map(StoreResponseDto::new);
     }
 
