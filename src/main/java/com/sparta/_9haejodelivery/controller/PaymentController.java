@@ -38,13 +38,13 @@ public class PaymentController {
 
     // 3. 결제 목록 조회 API (GET)
     @GetMapping
-public ApiResponse<Page<PaymentResponseDto>> getPaymentList(
-        @RequestParam(value = "orderId", required = false) UUID orderId,
-        Pageable pageable) { // <-- 여기에 Pageable 추가!
+    public ApiResponse<Page<PaymentResponseDto>> getPaymentList(
+            @RequestParam(value = "orderId", required = false) UUID orderId,
+            Pageable pageable) { // <-- 여기에 Pageable 추가!
 
-    Page<PaymentResponseDto> responsePage = paymentService.getPaymentList(orderId, pageable);
-    return ApiResponse.success(HttpStatus.OK, "결제 목록 조회 성공", responsePage);
-}
+        Page<PaymentResponseDto> responsePage = paymentService.getPaymentList(orderId, pageable);
+        return ApiResponse.success(HttpStatus.OK, "결제 목록 조회 성공", responsePage);
+    }
 
     // 4. 결제 상태 변경 API (PATCH)
     @PatchMapping("/{paymentId}")
