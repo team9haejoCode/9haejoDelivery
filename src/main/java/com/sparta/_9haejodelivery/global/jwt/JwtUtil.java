@@ -38,7 +38,7 @@ public class JwtUtil {
         return BEARER_PREFIX +
                 Jwts.builder()
                         .subject(username) // setSubject -> subject
-                        .claim(AUTHORIZATION_KEY, role) // 권한 정보
+                        .claim(AUTHORIZATION_KEY, role.getAuthority()) // 권한 정보
                         .expiration(new Date(date.getTime() + TOKEN_TIME)) // setExpiration -> expiration
                         .issuedAt(date) // setIssuedAt -> issuedAt
                         .signWith(key) // 알고리즘은 key 설정에 따라 자동 선택됨
@@ -51,14 +51,6 @@ public class JwtUtil {
             return bearerToken.substring(7); // "Bearer " 이후의 토큰 값만 추출
         }
         return null;
-    }
-
-    public String substringToken(String tokenValue) {
-        if (StringUtils.hasText(tokenValue) && tokenValue.startsWith(BEARER_PREFIX)) {
-            return tokenValue.substring(7);
-        }
-        log.error("Not Found Token");
-        throw new NullPointerException("Not Found Token");
     }
 
     public boolean validateToken(String token) {
