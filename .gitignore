@@ -37,4 +37,4 @@ out/
 .vscode/
 
 ### Temp File ###
-!Review*
+!**/src/main/**/Review*

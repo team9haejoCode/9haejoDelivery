@@ -17,6 +17,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.*;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
@@ -28,8 +29,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -49,6 +49,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
     Store store;
     Order order;
     Review review;
+    Pageable pageable;
 
     @BeforeEach
     void setUp() {
@@ -57,6 +58,8 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
         reviewRepository= Mockito.mock(ReviewRepository.class);
 
         reviewService=new ReviewService(reviewRepository,userRepository,orderRepository);
+
+        pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
 
         customer = User.builder()
                 .username("customer")
@@ -203,10 +206,12 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
     @DisplayName("리뷰 조회 테스트-전체 조회")
     void findAllReviews() {
         //given
-        given(reviewRepository.findAll()).willReturn(List.of(review));
+        List<Review> reviews = List.of(review);
+        Page<Review> page = new PageImpl<>(reviews, pageable, 1);
+        given(reviewRepository.findAll(any(Pageable.class))).willReturn(page);
 
         //when & then
-        List<ReviewResponseDTO> result = reviewService.findAllReviews();
+        Page<ReviewResponseDTO> result = reviewService.findAllReviews(pageable);
         assertThat(result).hasSize(1);
     }
 
@@ -227,12 +232,14 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
     @DisplayName("리뷰 조회 테스트-작성자 필터링")
     void findReviewByUser() {
         //given
+        List<Review> reviews = List.of(review);
+        Slice<Review> slice = new SliceImpl<>(reviews, pageable, false);
+
         given(userRepository.findByUsername(customer.getUsername())).willReturn(Optional.of(customer));
-        given(reviewRepository.findByUser(customer)).willReturn(List.of(review));
-        given(reviewRepository.findByUser(customer)).willReturn(List.of(review));
+        given(reviewRepository.findByUser(customer,pageable)).willReturn(slice);
 
         //when & then
-        List<ReviewResponseDTO> result = reviewService.findMyReviews(customer.getUsername());
+        Slice<ReviewResponseDTO> result = reviewService.findMyReviews(customer.getUsername(),pageable);
         assertThat(result).hasSize(1);
     }
 
@@ -240,12 +247,13 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
     @DisplayName("리뷰 조회 테스트-매장별 필터링")
     void findReviewByStore() {
         //given
-        given(userRepository.findByUsername(customer.getUsername())).willReturn(Optional.of(customer));
-        given(orderRepository.findAllByStoreStoreId(store.getStoreId())).willReturn(List.of(order));
-        given(reviewRepository.findByOrder(order)).willReturn(Optional.of(review));
+        List<Review> reviews = List.of(review);
+        Slice<Review> slice = new SliceImpl<>(reviews, pageable, false);
+
+        given(reviewRepository.findByStoreId(any(UUID.class),eq(pageable))).willReturn(slice);
 
         //when & then
-        List<ReviewResponseDTO> result = reviewService.findReviewsByStoreId(store.getStoreId());
+        Slice<ReviewResponseDTO> result = reviewService.findReviewsByStoreId(store.getStoreId(),pageable);
         assertThat(result).hasSize(1);
     }
 

@@ -1,7 +1,8 @@
 package com.sparta._9haejodelivery.dto;
 
-import com.sparta._9haejodelivery.domain.User;
 import com.sparta._9haejodelivery.domain.Order;
+import com.sparta._9haejodelivery.domain.Review;
+import com.sparta._9haejodelivery.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,4 +22,12 @@ public class ReviewResponseDTO {    //todo: 객체 입력 방식에 따라 수�
     public User createdBy;
     public LocalDateTime updatedAt;
     public User updatedBy;
+
+    public ReviewResponseDTO(Review review) {
+        this.reviewId = review.getReviewId();
+        this.rating = review.getRating().toPlainString();
+        this.description = review.getDescription();
+        this.createdAt = review.getCreatedAt();
+        this.updatedAt = review.getUpdatedAt();
+    }
 }

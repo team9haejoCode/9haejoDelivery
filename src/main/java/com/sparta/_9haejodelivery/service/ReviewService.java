@@ -10,13 +10,14 @@ import com.sparta._9haejodelivery.repository.ReviewRepository;
 import com.sparta._9haejodelivery.repository.temp_OrderRepository;
 import com.sparta._9haejodelivery.repository.temp_UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.nio.file.AccessDeniedException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 //todo: 현재 리뷰 제외 엔티티들 임의 수정버전, 수정 시 확인
@@ -54,19 +55,15 @@ public class ReviewService {
     //조회 - body로 데이터 수신, ALL: 매장별 리뷰 확인 가능, CUSTOMER: 작성 리뷰 리스트 조회 가능,
     //1. 전체 리뷰 조회 - 관리자용
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public List<ReviewResponseDTO> findAllReviews() {
-        List<ReviewResponseDTO> reviewList = new ArrayList<>();
-
-        for(Review review:reviewRepository.findAll()){
-            reviewList.add(ReviewResponseDTO.builder()
-                    .reviewId(review.getReviewId())
-                    .rating(review.getRating().toPlainString())
-                    .description(review.getDescription())
-                    .createdAt(review.getCreatedAt())
-                    .updatedAt(review.getUpdatedAt()
-                    ).build());
-        }
-        return reviewList;
+    public Page<ReviewResponseDTO> findAllReviews(Pageable pageable) {
+        Page<Review>reviewPage=reviewRepository.findAll(pageable);
+        return reviewPage.map(review -> ReviewResponseDTO.builder()
+                .reviewId(review.getReviewId())
+                .rating(review.getRating().toPlainString())
+                .description(review.getDescription())
+                .createdAt(review.getCreatedAt())
+                .updatedAt(review.getUpdatedAt()
+                ).build());
     }
 
     //2. 리뷰 상세 조회(리뷰 ID 사용)
@@ -84,45 +81,17 @@ public class ReviewService {
     }
 
     //3. 작성한 리뷰 조회
-    public List<ReviewResponseDTO> findMyReviews(String username) {
+    public Slice<ReviewResponseDTO> findMyReviews(String username, Pageable pageable) {
         User user=/*userService*/ userRepository.findByUsername(username)
                 .orElseThrow(()->new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
-        List<ReviewResponseDTO> reviewList = new ArrayList<>();
-
-        for(Review review:reviewRepository.findByUser(user)){
-            reviewList.add(ReviewResponseDTO.builder()
-                    .reviewId(review.getReviewId())
-                    .rating(review.getRating().toPlainString())
-                    .description(review.getDescription())
-                    .createdAt(review.getCreatedAt())
-                    .updatedAt(review.getUpdatedAt()
-                    ).build());
-        }
-        return reviewList;
+        Slice<Review> reviewSlice = reviewRepository.findByUser(user, pageable);
+        return reviewSlice.map(ReviewResponseDTO::new);
     }
 
     //4. 매장별 리뷰 조회 -> todo: order를 통해 확인한 판매점 정보 이용?
-    public List<ReviewResponseDTO> findReviewsByStoreId(UUID storeId) {
-        List<ReviewResponseDTO> reviewList = new ArrayList<>();
-        List<Order> orderList=/*orderService*/ orderRepository.findAllByStoreStoreId(storeId);
-
-        for(Order order:orderList){
-            Review review=reviewRepository.findByOrder(order)
-                    .orElseThrow(()->new IllegalArgumentException("해당 리뷰를 찾을 수 없습니다."));
-            reviewList.add(ReviewResponseDTO.builder()
-                    .reviewId(review.getReviewId())
-                    .rating(review.getRating().toPlainString())
-                    .description(review.getDescription())
-                    .createdAt(review.getCreatedAt())
-                    .createdBy(/*userService*/ userRepository.findByUsername(review.getCreatedBy())
-                            .orElseThrow(()->new IllegalArgumentException("해당 사용자를 찾을 수 없습니다.")))
-                    .updatedAt(review.getUpdatedAt())
-                    .updatedBy(review.getUpdatedBy()==null ? null :
-                            /*userService*/ userRepository.findByUsername(review.getUpdatedBy())
-                                            .orElseThrow(()->new IllegalArgumentException("해당 사용자를 찾을 수 없습니다.")))
-                    .build());
-        }
-        return reviewList;
+    public Slice<ReviewResponseDTO> findReviewsByStoreId(UUID storeId,Pageable pageable) {
+        Slice<Review> reviewSlice = reviewRepository.findByStoreId(storeId, pageable);
+        return reviewSlice.map(ReviewResponseDTO::new);
     }
 
     //수정 - 작성자 확인

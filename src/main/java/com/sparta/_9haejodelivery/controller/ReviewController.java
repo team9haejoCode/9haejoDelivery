@@ -8,13 +8,16 @@ import com.sparta._9haejodelivery.service.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.AccessDeniedException;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -43,7 +46,11 @@ public class ReviewController {
                     "2. 매장 검색 기능 " +
                     "3. body에 값이 없으면 전체 조회")
     @GetMapping("/")
-    public ApiResponse<?> getReviews(@RequestBody Map<String,Object> req) {
+    public ApiResponse<?> getReviews(@RequestBody Map<String,Object> req,
+                                     @PageableDefault
+                                             (size = 10,
+                                                     sort = "createdAt",
+                                                     direction = Sort.Direction.DESC) Pageable pageable) {
         if (req.containsKey("reviewId")) {
             return ApiResponse.success(HttpStatus.OK ,"리뷰 조회 성공", reviewService
                             .findReviewById(UUID
@@ -52,20 +59,24 @@ public class ReviewController {
             return ApiResponse.success(HttpStatus.OK,
                             "리뷰 조회 성공",
                             reviewService.findReviewsByStoreId(
-                                    UUID.fromString(req.get("storeId").toString())));
+                                    UUID.fromString(req.get("storeId").toString()),pageable));
         } else{ //전체 리뷰 조회는 관리자 권한 확인 후 진행
             return ApiResponse.success(HttpStatus.OK,
                             "리뷰 조회 성공",
-                            reviewService.findAllReviews());
+                            reviewService.findAllReviews(pageable));
         }
     }
 
     @Operation(summary = "작성한 리뷰 조회")
     @GetMapping("/myReviews")
-    public ApiResponse<List<ReviewResponseDTO>> getMyReviews(@AuthenticationPrincipal UserDetails userDetails) {
+    public ApiResponse<Slice<ReviewResponseDTO>> getMyReviews(@AuthenticationPrincipal UserDetails userDetails,
+                                                              @PageableDefault
+                                                                     (size = 10,
+                                                                             sort = "createdAt",
+                                                                             direction = Sort.Direction.DESC) Pageable pageable) {
         return ApiResponse.success(HttpStatus.OK,
                         "리뷰 조회 성공",
-                        reviewService.findMyReviews(userDetails.getUsername()));
+                        reviewService.findMyReviews(userDetails.getUsername(),pageable));
     }
 
     //patch /reviews/{reviewId} : 수정
