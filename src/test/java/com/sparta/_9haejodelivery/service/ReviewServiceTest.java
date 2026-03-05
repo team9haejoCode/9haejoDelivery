@@ -1,6 +1,8 @@
 package com.sparta._9haejodelivery.service;
 
 import com.sparta._9haejodelivery.domain.*;
+import com.sparta._9haejodelivery.domain.enums.OrderStatus;
+import com.sparta._9haejodelivery.domain.enums.UserRole;
 import com.sparta._9haejodelivery.dto.ReviewCreateRequestDTO;
 import com.sparta._9haejodelivery.dto.ReviewResponseDTO;
 import com.sparta._9haejodelivery.dto.ReviewUpdateDTO;
@@ -82,7 +84,6 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
                 .build();
 
         store = Store.builder()
-                .storeId(UUID.nameUUIDFromBytes("store".getBytes()))
                 .storeName("store")
                 .category(category)
                 .regionId(UUID.nameUUIDFromBytes("region".getBytes()))
@@ -92,11 +93,10 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
                 .isHide(false).build();
 
         order = Order.builder()
-                .orderId(UUID.nameUUIDFromBytes("order".getBytes()))
                 .user(customer)
                 .store(store)
                 .address("address")
-                .status(temp_OrderStatus.DELIVERY_COMPLETED).build();
+                .status(OrderStatus.DELIVERY_COMPLETED).build();
 
         review = Review.builder()
                 .reviewId(UUID.nameUUIDFromBytes("review".getBytes()))
@@ -108,6 +108,8 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
 
         ReflectionTestUtils.setField(review, "createdAt", LocalDateTime.now());
         ReflectionTestUtils.setField(review, "createdBy", customer.getUsername());
+        ReflectionTestUtils.setField(store, "storeId", UUID.nameUUIDFromBytes("store".getBytes()));
+        ReflectionTestUtils.setField(order, "orderId", UUID.nameUUIDFromBytes("order".getBytes()));
     }
 
 
