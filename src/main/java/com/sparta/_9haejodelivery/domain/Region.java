@@ -12,34 +12,29 @@ import java.util.UUID;
 public class Region extends BaseEntity {
 
     @Id
-    @Column(name = "region_id", columnDefinition = "uuid", nullable = false)
+    @Column(name = "region_id", nullable = false)
     private UUID regionId;
 
-    @Column(name = "city", length = 20, nullable = false)
-    private String city;
+    @Column(name = "zonecode", length = 10, nullable = false)
+    private String zonecode;
 
-    @Column(name = "district", length = 20, nullable = false)
-    private String district;
+    @Column(name = "sigungu", length = 20, nullable = false)
+    private String sigungu;
 
-    @Column(name = "neighborhood", length = 20, nullable = false)
-    private String neighborhood;
-
-    @Column(name = "postal_code", length = 10)
-    private String postalCode;
+    @Column(name = "bcode", length = 10, nullable = false)
+    private String bcode;
 
     @Builder
-    public Region(UUID regionId, String city, String district, String neighborhood, String postalCode) {
+    public Region(UUID regionId, String zonecode, String sigungu, String bcode) {
         this.regionId = regionId;
-        this.city = city;
-        this.district = district;
-        this.neighborhood = neighborhood;
-        this.postalCode = postalCode;
+        this.zonecode = zonecode;
+        this.sigungu = sigungu;
+        this.bcode = bcode;
     }
 
-    public void updateRegion(String city, String district, String neighborhood, String postalCode) {
-        if (city != null) this.city = city;
-        if (district != null) this.district = district;
-        if (neighborhood != null) this.neighborhood = neighborhood;
-        if (postalCode != null) this.postalCode = postalCode;
+    public void updateRegion(String zonecode, String sigungu, String bcode) {
+        if (zonecode != null) this.zonecode = zonecode;
+        if (sigungu != null) this.sigungu = sigungu;
+        if (bcode != null) this.bcode = bcode;
     }
 }
