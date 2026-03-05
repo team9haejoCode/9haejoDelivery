@@ -33,7 +33,7 @@ public class StoreController {
     @GetMapping
     public ApiResponse<Page<StoreResponseDto>> getStores(
             @RequestParam(required = false) String category,
-            @RequestParam(required = false) UUID regionId,
+            @RequestParam(required = false) String district,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "DESC") String sortDirection) {
@@ -41,9 +41,9 @@ public class StoreController {
             return ApiResponse.success(HttpStatus.OK, "카테고리별 매장 조회 성공",
                     storeService.getStoresByCategory(category, page, size, sortDirection));
         }
-        if (regionId != null) {
-            return ApiResponse.success(HttpStatus.OK, "지역별 매장 조회 성공",
-                    storeService.getStoresByRegion(regionId, page, size, sortDirection));
+        if (district != null) {
+            return ApiResponse.success(HttpStatus.OK, "지역구별 매장 조회 성공",
+                    storeService.getStoresByDistrict(district, page, size, sortDirection));
         }
         return ApiResponse.success(HttpStatus.OK, "매장 조회 성공",
                 storeService.getStores(page, size, sortDirection));
