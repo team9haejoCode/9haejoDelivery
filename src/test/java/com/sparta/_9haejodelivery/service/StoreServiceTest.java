@@ -93,9 +93,9 @@ class StoreServiceTest {
 
         Region region = Region.builder()
                 .regionId(regionId)
-                .city("서울시")
-                .district("강남구")
-                .neighborhood("역삼동")
+                .zonecode("06234")
+                .sigungu("성남시 분당구")
+                .bcode("백현동")
                 .build();
 
         when(categoryRepository.findById(categoryId))
@@ -270,9 +270,9 @@ class StoreServiceTest {
 
         Region region = Region.builder()
                 .regionId(regionId)
-                .city("서울시")
-                .district("강남구")
-                .neighborhood("역삼동")
+                .zonecode("06234")
+                .sigungu("성남시 분당구")
+                .bcode("백현동")
                 .build();
 
         when(storeRepository.findById(storeId))
