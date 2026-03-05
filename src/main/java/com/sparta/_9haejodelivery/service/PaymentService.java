@@ -9,6 +9,9 @@ import com.sparta._9haejodelivery.dto.PaymentUpdateRequestDto;
 import com.sparta._9haejodelivery.repository.PaymentHistoryRepository; 
 import com.sparta._9haejodelivery.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,20 +64,23 @@ public class PaymentService {
         return PaymentResponseDto.from(payment);
     }
 
-    // 2. 다건 조회 (GET)
+    // 2. 다건 조회 (GET) - 페이징 적용
     @Transactional(readOnly = true)
-    public List<PaymentResponseDto> getPaymentList(UUID orderId) {
-        List<Payment> payments;
+    public Page<PaymentResponseDto> getPaymentList(UUID orderId, Pageable pageable) {
+        Page<Payment> paymentPage;
+        
         if (orderId != null) {
-            payments = paymentRepository.findAllByOrderId(orderId);
+            // 주문 ID가 있으면 해당 주문의 결제 내역만 페이징 처리하여 조회
+            paymentPage = paymentRepository.findAllByOrderId(orderId, pageable);
         } else {
-            payments = paymentRepository.findAll();
+            // 주문 ID가 없으면 전체 결제 내역을 페이징 처리하여 조회
+            paymentPage = paymentRepository.findAll(pageable);
         }
-        return payments.stream()
-                .map(PaymentResponseDto::from)
-                .toList();
+        
+        // Page 객체는 자체적으로 map()을 지원하므로 stream 변환이 필요 없습니다!
+        return paymentPage.map(PaymentResponseDto::from);
     }
-
+    
     // 3. 결제 삭제/취소 (DELETE)
     @Transactional
     public void deletePayment(UUID paymentId, String username) {
