@@ -40,7 +40,7 @@ public class StoreController {
     @GetMapping
     public ApiResponse<Page<StoreResponseDto>> getStores(
             @Parameter(description = "카테고리명 (예: 한식)") @RequestParam(required = false) String category,
-            @Parameter(description = "시/군/구명 (예: 강남구)") @RequestParam(required = false) String sigungu,
+            @Parameter(description = "시/군/구명 (예: 서울특별시 강남구)") @RequestParam(required = false) String sigungu,
             @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(defaultValue = "0") @Min(0) int page,
             @Parameter(description = "페이지 크기 (10, 30, 50)") @RequestParam(defaultValue = "10") int size,
             @Parameter(description = "정렬 방향 (ASC, DESC)") @RequestParam(defaultValue = "DESC") String sortDirection) {
