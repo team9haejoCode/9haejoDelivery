@@ -1,6 +1,5 @@
 package com.sparta._9haejodelivery.dto;
 
-import com.sparta._9haejodelivery.domain.Region;
 import com.sparta._9haejodelivery.domain.Store;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
@@ -21,10 +20,10 @@ public class StoreResponseDto {
     @Schema(description = "카테고리명", example = "한식")
     private final String categoryName;
 
-    @Schema(description = "지역 정보")
-    private final Region region;
+    @Schema(description = "법정동 코드", example = "1111010100")
+    private final String bcodeId;
 
-    @Schema(description = "상세 주소", example = "서울시 강남구 역삼동 123-45")
+    @Schema(description = "상세 주소", example = "서울시 종로구 청운동 35")
     private final String address;
 
     @Schema(description = "매장 설명")
@@ -40,7 +39,7 @@ public class StoreResponseDto {
         this.storeId = store.getStoreId();
         this.storeName = store.getStoreName();
         this.categoryName = store.getCategory().getCategoryName();
-        this.region = store.getRegion();
+        this.bcodeId = store.getRegion().getBcodeId();
         this.address = store.getAddress();
         this.description = store.getDescription();
         this.createdAt = store.getCreatedAt();

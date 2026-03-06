@@ -46,13 +46,13 @@ class StoreServiceTest {
     private StoreRequestDto createRequestDto(
             String storeName,
             UUID categoryId,
-            UUID regionId
+            String bcodeId
     ) {
         StoreRequestDto dto = new StoreRequestDto();
 
         ReflectionTestUtils.setField(dto, "storeName", storeName);
         ReflectionTestUtils.setField(dto, "categoryId", categoryId);
-        ReflectionTestUtils.setField(dto, "regionId", regionId);
+        ReflectionTestUtils.setField(dto, "bcodeId", bcodeId);
         ReflectionTestUtils.setField(dto, "address", "201호");
         ReflectionTestUtils.setField(dto, "description", "테스트 설명");
         ReflectionTestUtils.setField(dto, "isHide", false);
@@ -63,13 +63,13 @@ class StoreServiceTest {
     private StoreUpdateRequestDto createUpdateRequestDto(
             String storeName,
             UUID categoryId,
-            UUID regionId
+            String bcodeId
     ) {
         StoreUpdateRequestDto dto = new StoreUpdateRequestDto();
 
         ReflectionTestUtils.setField(dto, "storeName", storeName);
         ReflectionTestUtils.setField(dto, "categoryId", categoryId);
-        ReflectionTestUtils.setField(dto, "regionId", regionId);
+        ReflectionTestUtils.setField(dto, "bcodeId", bcodeId);
         ReflectionTestUtils.setField(dto, "address", "202호");
         ReflectionTestUtils.setField(dto, "description", "테스트 설명2");
         ReflectionTestUtils.setField(dto, "isHide", false);
@@ -83,25 +83,24 @@ class StoreServiceTest {
         // given
         String storeName = "맛있는 식당";
         UUID categoryId = UUID.randomUUID();
-        UUID regionId = UUID.randomUUID();
+        String bcodeId = "1111010100";
 
-        StoreRequestDto requestDto = createRequestDto(storeName, categoryId, regionId);
+        StoreRequestDto requestDto = createRequestDto(storeName, categoryId, bcodeId);
 
         Category category = Category.builder()
                 .categoryName("한식")
                 .build();
 
         Region region = Region.builder()
-                .regionId(regionId)
-                .zonecode("06234")
-                .sigungu("성남시 분당구")
-                .bcode("백현동")
+                .bcodeId(bcodeId)
+                .sigungu("서울특별시 종로구")
+                .bcode("청운동")
                 .build();
 
         when(categoryRepository.findById(categoryId))
                 .thenReturn(Optional.of(category));
 
-        when(regionRepository.findById(regionId))
+        when(regionRepository.findById(bcodeId))
                 .thenReturn(Optional.of(region));
 
         when(storeRepository.save(any(Store.class)))
@@ -113,7 +112,7 @@ class StoreServiceTest {
         // then
         assertEquals(storeName, response.getStoreName());
         verify(categoryRepository).findById(categoryId);
-        verify(regionRepository).findById(regionId);
+        verify(regionRepository).findById(bcodeId);
         verify(storeRepository).save(any(Store.class));
     }
 
@@ -123,15 +122,15 @@ class StoreServiceTest {
         // given
         String storeName = "맛있는 식당";
         UUID categoryId = UUID.randomUUID();
-        UUID regionId = UUID.randomUUID();
+        String bcodeId = "1111010100";
 
-        StoreRequestDto requestDto = createRequestDto(storeName, categoryId, regionId);
+        StoreRequestDto requestDto = createRequestDto(storeName, categoryId, bcodeId);
 
         when(categoryRepository.findById(categoryId))
                 .thenReturn(Optional.empty());
 
         // when & then
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(IllegalArgumentException.class, () ->
                 storeService.createStore(requestDto));
         verify(storeRepository, never()).save(any(Store.class));
     }
@@ -146,18 +145,23 @@ class StoreServiceTest {
                 .categoryName("한식")
                 .build();
 
+        Region region = Region.builder()
+                .bcodeId("1111010100")
+                .sigungu("서울특별시 종로구")
+                .bcode("청운동")
+                .build();
+
         Store store = Store.builder()
                 .storeName("맛있는 식당")
                 .category(category)
+                .region(region)
                 .build();
 
         when(storeRepository.findById(storeId))
                 .thenReturn(Optional.of(store));
 
-        // when
-        StoreResponseDto response = storeService.getStore(storeId);
-
-        // then
+        // when & then
+        storeService.getStore(storeId);
         verify(storeRepository).findById(storeId);
     }
 
@@ -173,15 +177,23 @@ class StoreServiceTest {
                 .categoryName("한식")
                 .build();
 
+        Region region = Region.builder()
+                .bcodeId("1111010100")
+                .sigungu("서울특별시 종로구")
+                .bcode("청운동")
+                .build();
+
         Store store1 = Store.builder()
                 .storeName("맛1")
                 .category(category)
+                .region(region)
                 .isHide(false)
                 .build();
 
         Store store2 = Store.builder()
                 .storeName("맛2")
                 .category(category)
+                .region(region)
                 .isHide(false)
                 .build();
 
@@ -217,15 +229,23 @@ class StoreServiceTest {
                 .categoryName(categoryName)
                 .build();
 
+        Region region = Region.builder()
+                .bcodeId("1111010100")
+                .sigungu("서울특별시 종로구")
+                .bcode("청운동")
+                .build();
+
         Store store1 = Store.builder()
                 .storeName("맛1")
                 .category(category)
+                .region(region)
                 .isHide(false)
                 .build();
 
         Store store2 = Store.builder()
                 .storeName("맛2")
                 .category(category)
+                .region(region)
                 .isHide(false)
                 .build();
 
@@ -256,23 +276,22 @@ class StoreServiceTest {
         // given
         UUID storeId = UUID.randomUUID();
         UUID categoryId = UUID.randomUUID();
-        UUID regionId = UUID.randomUUID();
+        String bcodeId = "1111010100";
 
         Store store = Store.builder()
                 .storeName("맛있는 식당")
                 .build();
 
-        StoreUpdateRequestDto requestDto = createUpdateRequestDto("짱맛있는 식당", categoryId, regionId);
+        StoreUpdateRequestDto requestDto = createUpdateRequestDto("짱맛있는 식당", categoryId, bcodeId);
 
         Category category = Category.builder()
                 .categoryName("한식")
                 .build();
 
         Region region = Region.builder()
-                .regionId(regionId)
-                .zonecode("06234")
-                .sigungu("성남시 분당구")
-                .bcode("백현동")
+                .bcodeId(bcodeId)
+                .sigungu("서울특별시 종로구")
+                .bcode("청운동")
                 .build();
 
         when(storeRepository.findById(storeId))
@@ -281,11 +300,11 @@ class StoreServiceTest {
         when(categoryRepository.findById(categoryId))
                 .thenReturn(Optional.of(category));
 
-        when(regionRepository.findById(regionId))
+        when(regionRepository.findById(bcodeId))
                 .thenReturn(Optional.of(region));
 
         // when
-        StoreResponseDto responseDto = storeService.updateStore(storeId, requestDto);
+        storeService.updateStore(storeId, requestDto);
 
         // then
         verify(storeRepository).findById(storeId);

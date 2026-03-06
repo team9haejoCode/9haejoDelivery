@@ -35,7 +35,7 @@ public class StoreService {
         Category category = categoryRepository.findById(requestDto.getCategoryId())
                 .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
 
-        Region region = regionRepository.findById(requestDto.getRegionId())
+        Region region = regionRepository.findById(requestDto.getBcodeId())
                 .orElseThrow(() -> new IllegalArgumentException("지역을 찾을 수 없습니다."));
 
         Store store = Store.builder()
@@ -89,8 +89,8 @@ public class StoreService {
                 .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."))
                 : null;
 
-        Region region = requestDto.getRegionId() != null
-                ? regionRepository.findById(requestDto.getRegionId())
+        Region region = requestDto.getBcodeId() != null
+                ? regionRepository.findById(requestDto.getBcodeId())
                 .orElseThrow(() -> new IllegalArgumentException("지역을 찾을 수 없습니다."))
                 : null;
 
