@@ -1,65 +1,77 @@
 package com.sparta._9haejodelivery.service;
 
+import com.sparta._9haejodelivery.domain.Order;
 import com.sparta._9haejodelivery.domain.Review;
+import com.sparta._9haejodelivery.domain.User;
+import com.sparta._9haejodelivery.domain.enums.UserRole;
 import com.sparta._9haejodelivery.dto.ReviewCreateRequestDTO;
 import com.sparta._9haejodelivery.dto.ReviewResponseDTO;
 import com.sparta._9haejodelivery.dto.ReviewUpdateDTO;
 import com.sparta._9haejodelivery.repository.ReviewRepository;
+import com.sparta._9haejodelivery.repository.UserRepository;
+import com.sparta._9haejodelivery.repository.temp_OrderRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.nio.file.AccessDeniedException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
+//todo: 현재 리뷰 제외 엔티티들 임의 수정버전, 수정 시 확인
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
     private final ReviewRepository reviewRepository;
-//    private final UserService userService;
-//    private final OrderService orderService;
+    //todo: 업데이트 후 임시 생성 저장소 사용 부분 수정
+    private final /*UserService*/ UserRepository /*userService*/ userRepository;
+    private final /*OrderService*/ temp_OrderRepository /*orderService*/ orderRepository;
 
-    //todo: 생성, 조회, 매장별 전체조회, 수정, 삭제
+    //todo: 이미 해당 주문에 대해 작성한 리뷰가 있는 경우 처리
     //생성 - ROLE=CUSTOMER 확인 -> 일단 OWNER만 차단하도록, ORDER 정보 추가  /todo: 보안 연동 후 수정
-    public void createReview(ReviewCreateRequestDTO dto, UserDetails userdetails) /*throws AccessDeniedException*/ {
-        //토큰에서 ROLE 확인 및 유저 정보 획득
-//        User.ROLE=userdetails.getROLE();
-//        if(User.ROLE.equals(User.ROLE.CUSTOMER))
-//            throw new AccessDeniedException("리뷰 작성 권한이 없습니다.");
-         String username=userdetails.getUsername();
-//         User user=userService.findByUsername(username);
-        //order 정보 확인 및 추가
-//        Order order=orderService.findByOrderID(dto.getOrderID());
-        reviewRepository.save(Review.builder()
-//                .user(user)
-//                .order(order)
+    @PreAuthorize("hasRole('ROLE_CUSTOMER')")
+    public String createReview(ReviewCreateRequestDTO dto, String username) {
+
+        User user=/*userService*/ userRepository.findById(username)
+                .orElseThrow(()->new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+        Order order=/*orderService*/ orderRepository.findById(dto.getOrderId())
+                .orElseThrow(()->new IllegalArgumentException("해당 주문 내역을 찾을 수 없습니다."));
+
+        //이미 해당 주문에 대해 작성한 리뷰가 있는 경우
+        if(reviewRepository.findByOrder(order).isPresent())
+            throw new IllegalStateException("이미 해당 주문에 대해 리뷰를 작성했습니다.");
+
+        Review review = reviewRepository.save(Review.builder()
+                .user(user)
+                .order(order)
                 .rating(new BigDecimal(dto.getRating()))
                 .description(dto.getDescription()).build());//사용자 정보 추가
+
+        return review.getReviewId().toString();
     }
 
-    //조회 - body로 데이터 수신, COMMON: 전체 리뷰 확인 가능, CUSTOMER: 작성 리뷰 리스트 조회 가능, OWNER: ?
-    //1. 전체 리뷰 조회
-    public List<ReviewResponseDTO> findAllReviews() {
-        List<ReviewResponseDTO> reviewList = new ArrayList<>();
-        for(Review review:reviewRepository.findAll()){
-            reviewList.add(ReviewResponseDTO.builder()
-                    .reviewId(review.getReviewId())
-                    .rating(review.getRating().toPlainString())
-                    .description(review.getDescription())
-                    .createdAt(review.getCreatedAt())
-                    .updatedAt(review.getUpdatedAt()
-                    ).build());
-        }
-        return reviewList;
+    //조회 - body로 데이터 수신, ALL: 매장별 리뷰 확인 가능, CUSTOMER: 작성 리뷰 리스트 조회 가능,
+    //1. 전체 리뷰 조회 - 관리자용
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public Page<ReviewResponseDTO> findAllReviews(Pageable pageable) {
+        Page<Review>reviewPage=reviewRepository.findAll(pageable);
+        return reviewPage.map(review -> ReviewResponseDTO.builder()
+                .reviewId(review.getReviewId())
+                .rating(review.getRating().toPlainString())
+                .description(review.getDescription())
+                .createdAt(review.getCreatedAt())
+                .updatedAt(review.getUpdatedAt()
+                ).build());
     }
 
-    //2. 특정 리뷰 상세 조회(리뷰 ID 사용)
+    //2. 리뷰 상세 조회(리뷰 ID 사용)
     public ReviewResponseDTO findReviewById(UUID reviewId) {
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(()->new IllegalArgumentException("해당하는 리뷰를 찾을 수 없습니다."));
+                .orElseThrow(()->new IllegalArgumentException("해당 리뷰를 찾을 수 없습니다."));
+
         return ReviewResponseDTO.builder()
                 .reviewId(review.getReviewId())
                 .rating(review.getRating().toPlainString())
@@ -69,63 +81,55 @@ public class ReviewService {
                 ).build();
     }
 
-    //3. 작성한 리뷰 조회 -> todo: 유저 및 토큰 연동 이후
-//    public List<ReviewResponseDTO> findMyReviews(UserDetails userdetails) {
-//        UUID userId = userdetails.getId();
-//        List<ReviewResponseDTO> reviewList = new ArrayList<>();
-//        for(Review review:reviewRepository.findAllByUserId(userId)){
-//            reviewList.add(ReviewResponseDTO.builder()
-//                    .reviewId(review.getReviewId())
-//                    .rating(review.getRating().toPlainString())
-//                    .description(review.getDescription())
-//                    .createdAt(review.getCreatedAt())
-//                    .updatedAt(review.getUpdatedAt()
-//                    ).build());
-//        }
-//        return reviewList;
-//    }
+    //3. 작성한 리뷰 조회
+    public Slice<ReviewResponseDTO> findMyReviews(String username, Pageable pageable) {
+        User user=/*userService*/ userRepository.findById(username)
+                .orElseThrow(()->new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+        Slice<Review> reviewSlice = reviewRepository.findByUser(user, pageable);
+        return reviewSlice.map(ReviewResponseDTO::new);
+    }
 
     //4. 매장별 리뷰 조회 -> todo: order를 통해 확인한 판매점 정보 이용?
-//    public List<ReviewResponseDTO> findReviewsByStoreId(UUID storeId) {
-//        List<ReviewResponseDTO> reviewList = new ArrayList<>();
-//        for(Review review:reviewRepository.findAllByOrderStoreId(storeId)){  //todo: 탐색방법 구상
-//            reviewList.add(ReviewResponseDTO.builder()
-//                    .reviewId(review.getReviewId())
-//                    .rating(review.getRating().toPlainString())
-//                    .description(review.getDescription())
-//                    .createdAt(review.getCreatedAt())
-//                    .createdBy(review.getCreatedBy())
-//                    .updatedAt(review.getUpdatedAt()
-//                    .updatedBy(review.getUpdatedBy())
-//                    ).build());
-//        }
-//        return reviewList;
-//    }
+    public Slice<ReviewResponseDTO> findReviewsByStoreId(UUID storeId,Pageable pageable) {
+        Slice<Review> reviewSlice = reviewRepository.findByStoreId(storeId, pageable);
+        return reviewSlice.map(ReviewResponseDTO::new);
+    }
 
     //수정 - 작성자 확인
-    public void updateReview(UUID reviewId, ReviewUpdateDTO dto,UserDetails userDetails) /*throws AccessDeniedException*/ {
-//        User user=userService.findById(userDetails.getId())
-//                .orElseThrow(()->new IllegalArgumentException("해당하는 유저를 찾을 수 없습니다."));
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_CUSTOMER')")
+    public void updateReview(UUID reviewId, ReviewUpdateDTO dto,String username) throws AccessDeniedException {
+        User user=/*userService*/ userRepository.findById(username)
+                .orElseThrow(()->new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));  //todo: user서비스 확인 후 수정
         Review review=reviewRepository.findById(reviewId)
-                .orElseThrow(()->new IllegalArgumentException("해당하는 리뷰를 찾을 수 없습니다."));
-//        if(!user.username.equals(reivew.getUser().username))
-//            throw new AccessDeniedException("해당 리뷰의 작성자가 아닙니다.");
+                .orElseThrow(()->new IllegalArgumentException("해당 리뷰를 찾을 수 없습니다."));
+
+        if(!user.getUsername().equals(review.getUser().getUsername()))
+            throw new AccessDeniedException("해당 리뷰의 작성자가 아닙니다.");
+
         if(dto.rating!=null)
             review.setRating(new BigDecimal(dto.rating));
+
         if(dto.description!=null)
             review.setDescription(dto.description);
+
         reviewRepository.save(review);
     }
 
     //삭제 - 작성자 및 관리자권한 확인
-    public void deleteReview(UUID reviewId, UserDetails userDetails) /*throws AccessDeniedException*/ {
-//        if(userDetails.getROLE()==ROLE.Owner||
-//                (userDetails.getROLE()==ROLE.Customer&& !userDetails.getId().equals(review.getUser().getId())))
-//            throw new AccessDeniedException("해당 권한이 없습니다.");
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_CUSTOMER')")
+    public void deleteReview(UUID reviewId, String username) throws AccessDeniedException {
         Review review=reviewRepository.findById(reviewId)
-                .orElseThrow(()->new IllegalArgumentException("해당하는 리뷰를 찾을 수 없습니다."));
+                .orElseThrow(()->new IllegalArgumentException("해당 리뷰를 찾을 수 없습니다."));
+
+        User user=userRepository.findById(username)
+                .orElseThrow(()->new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+
+        if(user.getRole()== UserRole.CUSTOMER && !username.equals(review.getUser().getUsername()))
+            throw new AccessDeniedException("해당 권한이 없습니다.");
+
         review.setIsHide(true);
-        review.markAsDeleted(userDetails.getUsername());
+        review.markAsDeleted(username);
+        reviewRepository.save(review);
     }
 
 }

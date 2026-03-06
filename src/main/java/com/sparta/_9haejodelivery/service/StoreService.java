@@ -1,11 +1,13 @@
 package com.sparta._9haejodelivery.service;
 
 import com.sparta._9haejodelivery.domain.Category;
+import com.sparta._9haejodelivery.domain.Region;
 import com.sparta._9haejodelivery.domain.Store;
 import com.sparta._9haejodelivery.dto.StoreRequestDto;
 import com.sparta._9haejodelivery.dto.StoreResponseDto;
 import com.sparta._9haejodelivery.dto.StoreUpdateRequestDto;
 import com.sparta._9haejodelivery.repository.CategoryRepository;
+import com.sparta._9haejodelivery.repository.RegionRepository;
 import com.sparta._9haejodelivery.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,16 +28,20 @@ public class StoreService {
 
     private final StoreRepository storeRepository;
     private final CategoryRepository categoryRepository;
+    private final RegionRepository regionRepository;
 
     @Transactional
     public StoreResponseDto createStore(StoreRequestDto requestDto) {
         Category category = categoryRepository.findById(requestDto.getCategoryId())
                 .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
 
+        Region region = regionRepository.findById(requestDto.getBcodeId())
+                .orElseThrow(() -> new IllegalArgumentException("지역을 찾을 수 없습니다."));
+
         Store store = Store.builder()
                 .storeName(requestDto.getStoreName())
                 .category(category)
-                .regionId(requestDto.getRegionId())
+                .region(region)
                 .address(requestDto.getAddress())
                 .description(requestDto.getDescription())
                 .isHide(requestDto.getIsHide())
@@ -52,18 +58,18 @@ public class StoreService {
 
     @Transactional(readOnly = true)
     public Page<StoreResponseDto> getStoresByCategory(String categoryName, int page, int size, String sortDirection) {
-        Category category = categoryRepository.findByCategoryName(categoryName)
-                .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
         Pageable pageable = buildPageable(page, size, sortDirection);
-
-        return storeRepository.findByCategoryAndIsHideFalse(category, pageable).map(StoreResponseDto::new);
+        return storeRepository
+                .findByCategory_CategoryNameAndIsHideFalse(categoryName, pageable)
+                .map(StoreResponseDto::new);
     }
 
     @Transactional(readOnly = true)
-    public Page<StoreResponseDto> getStoresByRegion(UUID regionId, int page, int size, String sortDirection) {
+    public Page<StoreResponseDto> getStoresBySigungu(String sigungu, int page, int size, String sortDirection) {
         Pageable pageable = buildPageable(page, size, sortDirection);
-        // TODO: region id 확인
-        return storeRepository.findByRegionIdAndIsHideFalse(regionId, pageable).map(StoreResponseDto::new);
+        return storeRepository
+                .findByRegion_SigunguAndIsHideFalse(sigungu, pageable)
+                .map(StoreResponseDto::new);
     }
 
     @Transactional(readOnly = true)
@@ -78,16 +84,20 @@ public class StoreService {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new IllegalArgumentException("매장을 찾을 수 없습니다."));
 
-        Category category = null;
-        if (requestDto.getCategoryId() != null) {
-            category = categoryRepository.findById(requestDto.getCategoryId())
-                    .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
-        }
+        Category category = requestDto.getCategoryId() != null
+                ? categoryRepository.findById(requestDto.getCategoryId())
+                .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."))
+                : null;
+
+        Region region = requestDto.getBcodeId() != null
+                ? regionRepository.findById(requestDto.getBcodeId())
+                .orElseThrow(() -> new IllegalArgumentException("지역을 찾을 수 없습니다."))
+                : null;
 
         store.updateStore(
                 requestDto.getStoreName(),
                 category,
-                requestDto.getRegionId(),
+                region,
                 requestDto.getAddress(),
                 requestDto.getDescription(),
                 requestDto.getIsHide()

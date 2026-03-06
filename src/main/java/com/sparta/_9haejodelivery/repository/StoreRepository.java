@@ -13,6 +13,6 @@ public interface StoreRepository extends JpaRepository<Store, UUID> {
     Page<Store> findByIsHideFalse(Pageable pageable);
 
     Page<Store> findByCategoryAndIsHideFalse(Category category, Pageable pageable);
-
-    Page<Store> findByRegionIdAndIsHideFalse(UUID regionId, Pageable pageable);
-}
+    Page<Store> findByCategory_CategoryNameAndIsHideFalse(String categoryName, Pageable pageable);
+    Page<Store> findByRegion_SigunguAndIsHideFalse(String sigungu, Pageable pageable);
+    }
