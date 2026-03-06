@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -38,12 +39,15 @@ public class PaymentController {
 
     // 3. 결제 목록 조회 API (GET)
     @GetMapping
-    public ApiResponse<Page<PaymentResponseDto>> getPaymentList(
+    public ApiResponse<List<PaymentResponseDto>> getPaymentList(
             @RequestParam(value = "orderId", required = false) UUID orderId,
-            Pageable pageable) { // <-- 여기에 Pageable 추가!
+            Pageable pageable) { 
 
         Page<PaymentResponseDto> responsePage = paymentService.getPaymentList(orderId, pageable);
-        return ApiResponse.success(HttpStatus.OK, "결제 목록 조회 성공", responsePage);
+        
+        List<PaymentResponseDto> payments = responsePage.getContent(); 
+
+        return ApiResponse.success(HttpStatus.OK, "결제 목록 조회 성공", payments); 
     }
 
     // 4. 결제 상태 변경 API (PATCH)
