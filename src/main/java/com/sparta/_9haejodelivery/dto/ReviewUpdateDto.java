@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ReviewUpdateDto {//todo: 객체 입력 방식에 따라 수정
+public class ReviewUpdateDTO {//todo: 객체 입력 방식에 따라 수정
     private Order order;    //수정예정
     public String rating;
     public String description;

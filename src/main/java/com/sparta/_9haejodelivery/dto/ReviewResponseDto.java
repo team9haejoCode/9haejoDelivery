@@ -13,7 +13,7 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor
 @Builder
-public class ReviewResponseDto {    //todo: 객체 입력 방식에 따라 수정
+public class ReviewResponseDTO {    //todo: 객체 입력 방식에 따라 수정
     public UUID reviewId;
     public Order order; //todo: 주문 수정 예정
     public String rating;
@@ -23,7 +23,7 @@ public class ReviewResponseDto {    //todo: 객체 입력 방식에 따라 수�
     public LocalDateTime updatedAt;
     public User updatedBy;
 
-    public ReviewResponseDto(Review review) {
+    public ReviewResponseDTO(Review review) {
         this.reviewId = review.getReviewId();
         this.rating = review.getRating().toPlainString();
         this.description = review.getDescription();
