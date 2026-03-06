@@ -8,6 +8,7 @@ import com.sparta._9haejodelivery.service.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
@@ -34,7 +35,7 @@ public class ReviewController {
     @Operation(summary = "리뷰 작성")
     @PostMapping("/")
     public ApiResponse<String> createReview(@RequestBody ReviewCreateRequestDTO req,
-                                                            @AuthenticationPrincipal UserDetails userDetails) throws AccessDeniedException {
+                                                            @AuthenticationPrincipal UserDetails userDetails){
         String reviewId=reviewService.createReview(req, userDetails.getUsername());
         return ApiResponse.success(HttpStatus.CREATED ,"리뷰가 작성되었습니다.",reviewId);
     }
@@ -51,6 +52,11 @@ public class ReviewController {
                                              (size = 10,
                                                      sort = "createdAt",
                                                      direction = Sort.Direction.DESC) Pageable pageable) {
+        //pagable 검증 : 10, 30, 50건 외의 값은 10으로 고정
+        if(pageable.getPageSize()!=10 && pageable.getPageSize()!=30 && pageable.getPageSize()!=50){
+            pageable= PageRequest.of(pageable.getPageNumber(),10,pageable.getSort());
+        }
+
         if (req.containsKey("reviewId")) {
             return ApiResponse.success(HttpStatus.OK ,"리뷰 조회 성공", reviewService
                             .findReviewById(UUID
@@ -74,6 +80,10 @@ public class ReviewController {
                                                                      (size = 10,
                                                                              sort = "createdAt",
                                                                              direction = Sort.Direction.DESC) Pageable pageable) {
+        //pagable 검증 : 10, 30, 50건 외의 값은 10으로 고정
+        if(pageable.getPageSize()!=10 && pageable.getPageSize()!=30 && pageable.getPageSize()!=50){
+            pageable= PageRequest.of(pageable.getPageNumber(),10,pageable.getSort());
+        }
         return ApiResponse.success(HttpStatus.OK,
                         "리뷰 조회 성공",
                         reviewService.findMyReviews(userDetails.getUsername(),pageable));

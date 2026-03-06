@@ -118,7 +118,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
 
     @Test
     @DisplayName("리뷰 작성 테스트 - 정상처리")
-    void createReview() throws AccessDeniedException {
+    void createReview() {
         //given
         given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
         given(orderRepository.findById(order.getOrderId())).willReturn(Optional.of(order));
@@ -315,6 +315,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
     void deleteReview() throws AccessDeniedException {
         //given
         given(reviewRepository.findById(review.getReviewId())).willReturn(Optional.of(review));
+        given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
 
         //when
         reviewService.deleteReview(review.getReviewId(),customer.getUsername());

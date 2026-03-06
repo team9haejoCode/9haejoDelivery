@@ -3,6 +3,7 @@ package com.sparta._9haejodelivery.service;
 import com.sparta._9haejodelivery.domain.Order;
 import com.sparta._9haejodelivery.domain.Review;
 import com.sparta._9haejodelivery.domain.User;
+import com.sparta._9haejodelivery.domain.enums.UserRole;
 import com.sparta._9haejodelivery.dto.ReviewCreateRequestDTO;
 import com.sparta._9haejodelivery.dto.ReviewResponseDTO;
 import com.sparta._9haejodelivery.dto.ReviewUpdateDTO;
@@ -120,8 +121,12 @@ public class ReviewService {
         Review review=reviewRepository.findById(reviewId)
                 .orElseThrow(()->new IllegalArgumentException("해당 리뷰를 찾을 수 없습니다."));
 
-        if(!username.equals(review.getUser().getUsername()))
+        User user=userRepository.findById(username)
+                .orElseThrow(()->new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+
+        if(user.getRole()== UserRole.CUSTOMER && !username.equals(review.getUser().getUsername()))
             throw new AccessDeniedException("해당 권한이 없습니다.");
+
         review.setIsHide(true);
         review.markAsDeleted(username);
         reviewRepository.save(review);
