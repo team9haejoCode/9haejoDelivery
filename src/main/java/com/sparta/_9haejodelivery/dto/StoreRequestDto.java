@@ -20,11 +20,11 @@ public class StoreRequestDto {
     @NotNull
     private UUID categoryId;
 
-    @Schema(description = "지역 ID")
-    @NotNull
-    private UUID regionId;
+    @Schema(description = "지역 법정동코드 ID (bcodeId)", example = "1111010100")
+    @NotBlank
+    private String bcodeId;
 
-    @Schema(description = "상세 주소", example = "서울시 강남구 역삼동 123-45")
+    @Schema(description = "상세 주소", example = "서울특별시 종로구 청운동 3-55")
     @NotBlank
     private String address;
 

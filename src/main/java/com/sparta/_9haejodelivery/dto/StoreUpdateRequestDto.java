@@ -16,8 +16,8 @@ public class StoreUpdateRequestDto {
     @Schema(description = "카테고리 ID")
     private UUID categoryId;
 
-    @Schema(description = "지역 ID")
-    private UUID regionId;
+    @Schema(description = "지역 법정동코드 ID (bcodeId)", example = "1111010100")
+    private String bcodeId;
 
     @Schema(description = "상세 주소", example = "서울시 강남구 역삼동 123-45")
     private String address;

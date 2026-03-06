@@ -3,8 +3,6 @@ package com.sparta._9haejodelivery.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.UUID;
-
 @Entity
 @Table(name = "P_REGION")
 @Getter
@@ -12,11 +10,8 @@ import java.util.UUID;
 public class Region extends BaseEntity {
 
     @Id
-    @Column(name = "region_id", nullable = false)
-    private UUID regionId;
-
-    @Column(name = "zonecode", length = 10, nullable = false)
-    private String zonecode;
+    @Column(name = "bcode_id", length = 11, nullable = false, updatable = false)
+    private String bcodeId;
 
     @Column(name = "sigungu", length = 20, nullable = false)
     private String sigungu;
@@ -25,15 +20,13 @@ public class Region extends BaseEntity {
     private String bcode;
 
     @Builder
-    public Region(UUID regionId, String zonecode, String sigungu, String bcode) {
-        this.regionId = regionId;
-        this.zonecode = zonecode;
+    public Region(String bcodeId, String sigungu, String bcode) {
+        this.bcodeId = bcodeId;
         this.sigungu = sigungu;
         this.bcode = bcode;
     }
 
-    public void updateRegion(String zonecode, String sigungu, String bcode) {
-        if (zonecode != null) this.zonecode = zonecode;
+    public void updateRegion(String sigungu, String bcode) {
         if (sigungu != null) this.sigungu = sigungu;
         if (bcode != null) this.bcode = bcode;
     }
