@@ -1,9 +1,10 @@
 package com.sparta._9haejodelivery.controller;
 
 import com.sparta._9haejodelivery.common.ApiResponse;
-import com.sparta._9haejodelivery.dto.ReviewCreateRequestDTO;
-import com.sparta._9haejodelivery.dto.ReviewResponseDTO;
-import com.sparta._9haejodelivery.dto.ReviewUpdateDTO;
+import com.sparta._9haejodelivery.dto.ReviewCreateRequestDto;
+import com.sparta._9haejodelivery.dto.ReviewResponseDto;
+import com.sparta._9haejodelivery.dto.ReviewSearchRequestDto;
+import com.sparta._9haejodelivery.dto.ReviewUpdateDto;
 import com.sparta._9haejodelivery.service.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,7 +20,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.AccessDeniedException;
-import java.util.Map;
 import java.util.UUID;
 
 //todo: 반환타입 확인, 현재 테스트를 위해 필요한 부분 직접 받는 방식으로 임시 작성 예정-> 수정 예정
@@ -34,7 +34,7 @@ public class ReviewController {
     //post /reviews: 생성
     @Operation(summary = "리뷰 작성")
     @PostMapping("/")
-    public ApiResponse<String> createReview(@RequestBody ReviewCreateRequestDTO req,
+    public ApiResponse<String> createReview(@RequestBody ReviewCreateRequestDto req,
                                                             @AuthenticationPrincipal UserDetails userDetails){
         String reviewId=reviewService.createReview(req, userDetails.getUsername());
         return ApiResponse.success(HttpStatus.CREATED ,"리뷰가 작성되었습니다.",reviewId);
@@ -47,7 +47,7 @@ public class ReviewController {
                     "2. 매장 검색 기능 " +
                     "3. body에 값이 없으면 전체 조회")
     @GetMapping("/")
-    public ApiResponse<?> getReviews(@RequestBody Map<String,Object> req,
+    public ApiResponse<?> getReviews(@ModelAttribute ReviewSearchRequestDto dto,
                                      @PageableDefault
                                              (size = 10,
                                                      sort = "createdAt",
@@ -57,15 +57,15 @@ public class ReviewController {
             pageable= PageRequest.of(pageable.getPageNumber(),10,pageable.getSort());
         }
 
-        if (req.containsKey("reviewId")) {
+        if (dto.getReviewId() != null) {
             return ApiResponse.success(HttpStatus.OK ,"리뷰 조회 성공", reviewService
                             .findReviewById(UUID
-                                    .fromString(req.get("reviewId").toString())));
-        }else if(req.containsKey("storeId")){
+                                    .fromString(dto.getReviewId())));
+        }else if(dto.getStoreId()!=null){
             return ApiResponse.success(HttpStatus.OK,
                             "리뷰 조회 성공",
                             reviewService.findReviewsByStoreId(
-                                    UUID.fromString(req.get("storeId").toString()),pageable));
+                                    UUID.fromString(dto.getStoreId()),pageable));
         } else{ //전체 리뷰 조회는 관리자 권한 확인 후 진행
             return ApiResponse.success(HttpStatus.OK,
                             "리뷰 조회 성공",
@@ -75,7 +75,7 @@ public class ReviewController {
 
     @Operation(summary = "작성한 리뷰 조회")
     @GetMapping("/myReviews")
-    public ApiResponse<Slice<ReviewResponseDTO>> getMyReviews(@AuthenticationPrincipal UserDetails userDetails,
+    public ApiResponse<Slice<ReviewResponseDto>> getMyReviews(@AuthenticationPrincipal UserDetails userDetails,
                                                               @PageableDefault
                                                                      (size = 10,
                                                                              sort = "createdAt",
@@ -93,7 +93,7 @@ public class ReviewController {
     @Operation(summary = "리뷰 수정")
     @PatchMapping("/{reviewId}")
     public ApiResponse<String> updateReview(@PathVariable String reviewId,
-                                                            @RequestBody ReviewUpdateDTO req,
+                                                            @RequestBody ReviewUpdateDto req,
                                                             @AuthenticationPrincipal UserDetails userDetails)
             throws AccessDeniedException {
         reviewService.updateReview(UUID
