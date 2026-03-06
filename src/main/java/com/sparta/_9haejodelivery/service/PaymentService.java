@@ -9,10 +9,12 @@ import com.sparta._9haejodelivery.dto.PaymentUpdateRequestDto;
 import com.sparta._9haejodelivery.repository.PaymentHistoryRepository; 
 import com.sparta._9haejodelivery.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -42,11 +44,20 @@ public class PaymentService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 결제 내역을 찾을 수 없습니다. ID: " + paymentId));
 
         PaymentStatus previousStatus = payment.getStatus();
-        payment.updateStatus(requestDto.status());
+        PaymentStatus requestedStatus = requestDto.status();
 
-        if (requestDto.status() == PaymentStatus.COMPLETED) {
+        if (requestedStatus == PaymentStatus.COMPLETED) {
             String fakePgId = "toss_mock_" + UUID.randomUUID().toString().substring(0, 8);
             payment.completePayment(fakePgId);
+            
+        } else if (requestedStatus == PaymentStatus.CANCELED) {
+            payment.cancelPayment("SYSTEM_UPDATE"); 
+            
+        } else if (requestedStatus == PaymentStatus.FAILED) {
+            payment.failedPayment("SYSTEM_UPDATE");
+            
+        } else {
+            throw new IllegalArgumentException("Invalid status transition requested: " + requestedStatus);
         }
 
         saveHistory(payment, previousStatus, "결제 상태 업데이트");
@@ -61,18 +72,18 @@ public class PaymentService {
         return PaymentResponseDto.from(payment);
     }
 
-    // 2. 다건 조회 (GET)
+    // 2. 다건 조회 (GET) - 페이징 적용
     @Transactional(readOnly = true)
-    public List<PaymentResponseDto> getPaymentList(UUID orderId) {
-        List<Payment> payments;
+    public Page<PaymentResponseDto> getPaymentList(UUID orderId, Pageable pageable) {
+        Page<Payment> paymentPage;
+        
         if (orderId != null) {
-            payments = paymentRepository.findAllByOrderId(orderId);
+            paymentPage = paymentRepository.findAllByOrderId(orderId, pageable);
         } else {
-            payments = paymentRepository.findAll();
+            paymentPage = paymentRepository.findAll(pageable);
         }
-        return payments.stream()
-                .map(PaymentResponseDto::from)
-                .toList();
+
+        return paymentPage.map(PaymentResponseDto::from);
     }
 
     // 3. 결제 삭제/취소 (DELETE)

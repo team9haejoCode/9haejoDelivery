@@ -7,6 +7,9 @@ import com.sparta._9haejodelivery.dto.PaymentUpdateRequestDto;
 import com.sparta._9haejodelivery.service.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,9 +40,14 @@ public class PaymentController {
     // 3. 결제 목록 조회 API (GET)
     @GetMapping
     public ApiResponse<List<PaymentResponseDto>> getPaymentList(
-            @RequestParam(value = "orderId", required = false) UUID orderId) {
-        List<PaymentResponseDto> responseList = paymentService.getPaymentList(orderId);
-        return ApiResponse.success(HttpStatus.OK, "결제 목록 조회 성공", responseList);
+            @RequestParam(value = "orderId", required = false) UUID orderId,
+            Pageable pageable) { 
+
+        Page<PaymentResponseDto> responsePage = paymentService.getPaymentList(orderId, pageable);
+        
+        List<PaymentResponseDto> payments = responsePage.getContent(); 
+
+        return ApiResponse.success(HttpStatus.OK, "결제 목록 조회 성공", payments); 
     }
 
     // 4. 결제 상태 변경 API (PATCH)
