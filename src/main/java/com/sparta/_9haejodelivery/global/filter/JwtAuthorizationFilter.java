@@ -1,5 +1,7 @@
 package com.sparta._9haejodelivery.global.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sparta._9haejodelivery.common.ApiResponse;
 import com.sparta._9haejodelivery.global.jwt.JwtUtil;
 import com.sparta._9haejodelivery.global.security.UserDetailsServiceImpl;
 import io.jsonwebtoken.Claims;
@@ -8,6 +10,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -27,28 +30,28 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         this.userDetailsService = userDetailsService;
     }
 
+
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain filterChain) throws ServletException, IOException {
+        log.info("요청 들어옴! URL: " + req.getRequestURI());
+
         String tokenValue = jwtUtil.getJwtFromHeader(req);
 
         if (StringUtils.hasText(tokenValue)) {
-            if (!jwtUtil.validateToken(tokenValue)) { //위조, 기간 확인
-                log.error("Token Error");
-                return;
-            }
-
-            Claims info = jwtUtil.getUserInfoFromToken(tokenValue);
-
-            try {
-                setAuthentication(info.getSubject());
-            } catch (Exception e) {
-                log.error(e.getMessage());
-                return;
+            if (jwtUtil.validateToken(tokenValue)) {
+                log.info("토큰 유효성 검사 성공");
+                Claims info = jwtUtil.getUserInfoFromToken(tokenValue);
+                try {
+                    setAuthentication(info.getSubject());
+                } catch (Exception e) {
+                    log.error("인증 객체 생성 실패: " + e.getMessage());
+                }
             }
         }
 
         filterChain.doFilter(req, res);
     }
+
 
     // 인증 객체 생성 및 SecurityContextHolder에 저장
     public void setAuthentication(String username) {
@@ -61,6 +64,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     private Authentication createAuthentication(String username) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        log.info("createAuthentication 유저 권한 확인: " + userDetails.getAuthorities().toString());
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 
