@@ -18,6 +18,11 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Not Found " + username));
+        //최신 상태의 user 객체
+
+        if (user.getDeletedAt() != null) {
+            throw new UsernameNotFoundException("탈퇴 처리된 계정입니다: " + username);
+        }
 
         return new UserDetailsImpl(user);
     }

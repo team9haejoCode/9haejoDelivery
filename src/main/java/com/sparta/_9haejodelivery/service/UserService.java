@@ -3,12 +3,16 @@ package com.sparta._9haejodelivery.service;
 import com.sparta._9haejodelivery.domain.RefreshToken;
 import com.sparta._9haejodelivery.domain.User;
 import com.sparta._9haejodelivery.domain.UserRole;
+import com.sparta._9haejodelivery.dto.UserResponseDto;
 import com.sparta._9haejodelivery.dto.UserSignupRequestDto;
+import com.sparta._9haejodelivery.dto.UserUpdateProfileRequestDto;
 import com.sparta._9haejodelivery.global.jwt.JwtUtil;
 import com.sparta._9haejodelivery.repository.RefreshTokenRepository;
 import com.sparta._9haejodelivery.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import org.springframework.stereotype.Service;
@@ -49,7 +53,6 @@ public class UserService {
         userRepository.save(user);
     }
 
-
     @Transactional
     public Map<String, String> reissue(String refreshTokenValue) {
         String token = jwtUtil.substringToken(refreshTokenValue);
@@ -74,6 +77,48 @@ public class UserService {
         String newAccessToken = jwtUtil.createAccessToken(username, role);
 
         return Map.of("accessToken", newAccessToken);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<UserResponseDto> getUsers(Pageable pageable) {
+        return userRepository.findAllByDeletedAtIsNull(pageable).map(user -> UserResponseDto.builder()
+                .username(user.getUsername())
+                .nickname(user.getNickname())
+                .address(user.getAddress())
+                .role(user.getRole())
+                .createdAt(user.getCreatedAt())
+                .deletedAt(user.getDeletedAt())
+                .build());
+    }
+
+    @Transactional
+    public UserResponseDto updateProfile(String username, UserUpdateProfileRequestDto requestDto) {
+        User user = userRepository.findByUsernameAndDeletedAtIsNull(username)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없거나 탈퇴한 사용자입니다."));
+
+        String newNickname = requestDto.getNickname();
+
+        if (!user.getNickname().equals(newNickname)) {
+            if (userRepository.existsByNicknameAndDeletedAtIsNull(newNickname)) {
+                throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+            }
+        }
+
+        user.updateProfile(newNickname, requestDto.getAddress());
+
+        return new UserResponseDto(user);
+    }
+
+    @Transactional
+    public void withdraw(String targetUsername, String requesterUsername) {
+        User user = userRepository.findByUsername(targetUsername)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+
+        if (user.getDeletedAt() != null) {
+            throw new IllegalArgumentException("이미 탈퇴 처리된 사용자입니다.");
+        }
+
+        user.markAsDeleted(requesterUsername);
     }
 
 
