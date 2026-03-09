@@ -1,5 +1,6 @@
 package com.sparta._9haejodelivery.service;
 
+import com.sparta._9haejodelivery.common.BusinessException;
 import com.sparta._9haejodelivery.domain.Category;
 import com.sparta._9haejodelivery.domain.Region;
 import com.sparta._9haejodelivery.domain.Store;
@@ -130,7 +131,7 @@ class StoreServiceTest {
                 .thenReturn(Optional.empty());
 
         // when & then
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(BusinessException.class, () ->
                 storeService.createStore(requestDto));
         verify(storeRepository, never()).save(any(Store.class));
     }
@@ -290,7 +291,7 @@ class StoreServiceTest {
                 .thenReturn(Optional.empty());
 
         // when & then
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(BusinessException.class, () ->
                 storeService.createStore(requestDto));
         verify(storeRepository, never()).save(any(Store.class));
     }
@@ -305,7 +306,7 @@ class StoreServiceTest {
                 .thenReturn(Optional.empty());
 
         // when & then
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(BusinessException.class, () ->
                 storeService.getStore(storeId));
     }
 
@@ -438,7 +439,7 @@ class StoreServiceTest {
                 .thenReturn(Optional.empty());
 
         // when & then
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(BusinessException.class, () ->
                 storeService.updateStore(storeId, requestDto));
     }
 
@@ -462,7 +463,7 @@ class StoreServiceTest {
                 .thenReturn(Optional.empty());
 
         // when & then
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(BusinessException.class, () ->
                 storeService.updateStore(storeId, requestDto));
     }
 
@@ -486,7 +487,7 @@ class StoreServiceTest {
                 .thenReturn(Optional.empty());
 
         // when & then
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(BusinessException.class, () ->
                 storeService.updateStore(storeId, requestDto));
     }
 
@@ -557,7 +558,7 @@ class StoreServiceTest {
                 .thenReturn(Optional.empty());
 
         // when & then
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(BusinessException.class, () ->
                 storeService.deleteStore(storeId));
     }
 
