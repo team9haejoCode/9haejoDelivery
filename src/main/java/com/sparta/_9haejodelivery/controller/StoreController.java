@@ -1,6 +1,8 @@
 package com.sparta._9haejodelivery.controller;
 
 import com.sparta._9haejodelivery.common.ApiResponse;
+import com.sparta._9haejodelivery.common.BusinessException;
+import com.sparta._9haejodelivery.common.ErrorCode;
 import com.sparta._9haejodelivery.dto.StoreRequestDto;
 import com.sparta._9haejodelivery.dto.StoreResponseDto;
 import com.sparta._9haejodelivery.dto.StoreUpdateRequestDto;
@@ -45,7 +47,7 @@ public class StoreController {
             @Parameter(description = "페이지 크기 (10, 30, 50)") @RequestParam(defaultValue = "10") int size,
             @Parameter(description = "정렬 방향 (ASC, DESC)") @RequestParam(defaultValue = "DESC") String sortDirection) {
         if (category != null && sigungu != null) {
-            throw new IllegalArgumentException("category와 sigungu는 동시에 사용할 수 없습니다.");
+            throw new BusinessException(ErrorCode.STORE_FILTER_CONFLICT);
         }
         if (category != null) {
             return ApiResponse.success(HttpStatus.OK, "카테고리별 매장 조회 성공",
