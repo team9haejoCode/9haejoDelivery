@@ -1,6 +1,5 @@
 package com.sparta._9haejodelivery.repository;
 
-import com.sparta._9haejodelivery.domain.Category;
 import com.sparta._9haejodelivery.domain.Store;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,7 +11,6 @@ public interface StoreRepository extends JpaRepository<Store, UUID> {
 
     Page<Store> findByIsHideFalse(Pageable pageable);
 
-    Page<Store> findByCategoryAndIsHideFalse(Category category, Pageable pageable);
     Page<Store> findByCategory_CategoryNameAndIsHideFalse(String categoryName, Pageable pageable);
     Page<Store> findByRegion_SigunguAndIsHideFalse(String sigungu, Pageable pageable);
     }
