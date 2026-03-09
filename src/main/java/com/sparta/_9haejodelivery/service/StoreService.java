@@ -1,5 +1,7 @@
 package com.sparta._9haejodelivery.service;
 
+import com.sparta._9haejodelivery.common.BusinessException;
+import com.sparta._9haejodelivery.common.ErrorCode;
 import com.sparta._9haejodelivery.domain.Category;
 import com.sparta._9haejodelivery.domain.Region;
 import com.sparta._9haejodelivery.domain.Store;
@@ -33,10 +35,10 @@ public class StoreService {
     @Transactional
     public StoreResponseDto createStore(StoreRequestDto requestDto) {
         Category category = categoryRepository.findById(requestDto.getCategoryId())
-                .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
 
         Region region = regionRepository.findById(requestDto.getBcodeId())
-                .orElseThrow(() -> new IllegalArgumentException("지역을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.REGION_NOT_FOUND));
 
         Store store = Store.builder()
                 .storeName(requestDto.getStoreName())
@@ -75,23 +77,23 @@ public class StoreService {
     @Transactional(readOnly = true)
     public StoreResponseDto getStore(UUID storeId) {
         Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new IllegalArgumentException("매장을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.STORE_NOT_FOUND));
         return new StoreResponseDto(store);
     }
 
     @Transactional
     public StoreResponseDto updateStore(UUID storeId, StoreUpdateRequestDto requestDto) {
         Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new IllegalArgumentException("매장을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.STORE_NOT_FOUND));
 
         Category category = requestDto.getCategoryId() != null
                 ? categoryRepository.findById(requestDto.getCategoryId())
-                .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."))
+                .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND))
                 : null;
 
         Region region = requestDto.getBcodeId() != null
                 ? regionRepository.findById(requestDto.getBcodeId())
-                .orElseThrow(() -> new IllegalArgumentException("지역을 찾을 수 없습니다."))
+                .orElseThrow(() -> new BusinessException(ErrorCode.REGION_NOT_FOUND))
                 : null;
 
         store.updateStore(
@@ -108,8 +110,8 @@ public class StoreService {
     @Transactional
     public void deleteStore(UUID storeId) {
         Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new IllegalArgumentException("매장을 찾을 수 없습니다."));
-        store.markAsDeleted(null); // TODO: userId
+                .orElseThrow(() -> new BusinessException(ErrorCode.STORE_NOT_FOUND));
+        store.markAsDeleted(null); // TODO: userId 
     }
 
     private Pageable buildPageable(int page, int size, String sortDirection) {
