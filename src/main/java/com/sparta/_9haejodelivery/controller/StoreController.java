@@ -44,6 +44,9 @@ public class StoreController {
             @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(defaultValue = "0") @Min(0) int page,
             @Parameter(description = "페이지 크기 (10, 30, 50)") @RequestParam(defaultValue = "10") int size,
             @Parameter(description = "정렬 방향 (ASC, DESC)") @RequestParam(defaultValue = "DESC") String sortDirection) {
+        if (category != null && sigungu != null) {
+            throw new IllegalArgumentException("category와 sigungu는 동시에 사용할 수 없습니다.");
+        }
         if (category != null) {
             return ApiResponse.success(HttpStatus.OK, "카테고리별 매장 조회 성공",
                     storeService.getStoresByCategory(category, page, size, sortDirection));
