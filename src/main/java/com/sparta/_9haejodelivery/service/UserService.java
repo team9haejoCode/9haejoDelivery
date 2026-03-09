@@ -130,5 +130,12 @@ public class UserService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public UserResponseDto getUserProfile(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
+
+        return new UserResponseDto(user);
+    }
 
 }

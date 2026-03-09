@@ -3,6 +3,7 @@ package com.sparta._9haejodelivery.global.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta._9haejodelivery.common.ApiResponse;
 import com.sparta._9haejodelivery.domain.RefreshToken;
+import com.sparta._9haejodelivery.domain.User;
 import com.sparta._9haejodelivery.domain.UserRole;
 import com.sparta._9haejodelivery.dto.UserLoginRequestDto;
 import com.sparta._9haejodelivery.global.jwt.JwtUtil;
@@ -52,8 +53,24 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException {
-        String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
-        UserRole role = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getRole();
+        User user = ((UserDetailsImpl) authResult.getPrincipal()).getUser();
+
+        if (user.getDeletedAt() != null) {
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+            ApiResponse<Void> apiResponse = ApiResponse.fail(
+                    HttpStatus.UNAUTHORIZED,
+                    "탈퇴 처리된 계정입니다."
+            );
+
+            new ObjectMapper().writeValue(response.getWriter(), apiResponse);
+            return;
+        }
+
+        String username = user.getUsername();
+        UserRole role = user.getRole();
 
         String accessToken = jwtUtil.createAccessToken(username, role);
         String refreshToken = jwtUtil.createRefreshToken(username);

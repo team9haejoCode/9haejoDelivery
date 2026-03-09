@@ -1,10 +1,7 @@
 package com.sparta._9haejodelivery.controller;
 
 import com.sparta._9haejodelivery.common.ApiResponse;
-import com.sparta._9haejodelivery.dto.UserResponseDto;
-import com.sparta._9haejodelivery.dto.UserSearchRequestDto;
-import com.sparta._9haejodelivery.dto.UserSignupRequestDto;
-import com.sparta._9haejodelivery.dto.UserUpdateProfileRequestDto;
+import com.sparta._9haejodelivery.dto.*;
 import com.sparta._9haejodelivery.global.security.UserDetailsImpl;
 import com.sparta._9haejodelivery.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -61,7 +58,7 @@ public class UserController {
         return ApiResponse.success(HttpStatus.OK, "유저 조회 성공", userService.getUsers(pageable));
     }
 
-    @PatchMapping("/profile")
+    @PatchMapping("/profile/edit")
     @Operation(summary = "유저 정보 수정")
     public ApiResponse<UserResponseDto> updateProfile(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -95,6 +92,23 @@ public class UserController {
         userService.logout(userDetails.getUsername());
 
         return ApiResponse.success(HttpStatus.OK, "사용자가 로그아웃 되었습니다.", null);
+    }
+
+    @GetMapping("/profile")
+    @Operation(summary = "내 프로필 조회", description = "현재 로그인한 유저 본인의 정보를 조회합니다.")
+    public ApiResponse<UserResponseDto> getMyProfile(
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ApiResponse.success(HttpStatus.OK, "내 프로필 조회가 완료되었습니다.",
+                userService.getUserProfile(userDetails.getUsername()));
+    }
+
+    @GetMapping("/{username}/profile")
+    @PreAuthorize("hasRole('MANAGER')")
+    @Operation(summary = "특정 유저 상세 조회(관리자)", description = "관리자가 특정 유저의 상세 정보를 조회합니다.")
+    public ApiResponse<UserResponseDto> getUserProfileByAdmin(
+            @PathVariable String username) {
+        return ApiResponse.success(HttpStatus.OK, "유저 상세 정보 조회가 성공하였습니다.",
+                userService.getUserProfile(username));
     }
 
 }
