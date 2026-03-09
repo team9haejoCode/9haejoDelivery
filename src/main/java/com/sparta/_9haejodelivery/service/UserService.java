@@ -121,5 +121,14 @@ public class UserService {
         user.markAsDeleted(requesterUsername);
     }
 
+    @Transactional
+    public void logout(String username) {
+        if (refreshTokenRepository.existsById(username)) {
+            refreshTokenRepository.deleteById(username);
+        } else {
+            throw new IllegalArgumentException("이미 로그아웃 상태이거나 토큰이 존재하지 않습니다.");
+        }
+    }
+
 
 }

@@ -50,7 +50,6 @@ public class UserController {
     @GetMapping
     @Operation(summary = "전체 유저 조회 (관리자)")
     public ApiResponse<Page<UserResponseDto>> getUsers(
-            @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
         int validatedSize = UserSearchRequestDto.validateSize(pageable.getPageSize());
@@ -90,5 +89,12 @@ public class UserController {
         return ApiResponse.success(HttpStatus.OK, "사용자가 강제 탈퇴 처리되었습니다.", null);
     }
 
+    @PostMapping("/logout")
+    @Operation(summary = "로그아웃", description = "DB에 저장된 리프레시 토큰을 삭제하여 재발급을 차단합니다.")
+    public ApiResponse<Void> logout(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        userService.logout(userDetails.getUsername());
+
+        return ApiResponse.success(HttpStatus.OK, "사용자가 로그아웃 되었습니다.", null);
+    }
 
 }
