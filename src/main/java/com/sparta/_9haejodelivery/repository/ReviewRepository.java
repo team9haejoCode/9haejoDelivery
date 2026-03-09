@@ -28,6 +28,8 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
 
     Slice<Review> findByUser(User user, Pageable pageable);
 
-    @Query("SELECT AVG(r.rating) FROM Review r WHERE r.store.id = :storeId")
+    @Query("SELECT AVG(r.rating) FROM Review r " +
+            "join r.order o " +
+            "where o.store.storeId=:storeId")
     BigDecimal getAverageRatingByStoreId(UUID storeId);
 }

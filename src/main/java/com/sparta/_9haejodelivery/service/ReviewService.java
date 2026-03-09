@@ -3,7 +3,7 @@ package com.sparta._9haejodelivery.service;
 import com.sparta._9haejodelivery.domain.Order;
 import com.sparta._9haejodelivery.domain.Review;
 import com.sparta._9haejodelivery.domain.User;
-import com.sparta._9haejodelivery.domain.enums.UserRole;
+import com.sparta._9haejodelivery.domain.UserRole;
 import com.sparta._9haejodelivery.dto.ReviewCreateRequestDto;
 import com.sparta._9haejodelivery.dto.ReviewResponseDto;
 import com.sparta._9haejodelivery.dto.ReviewUpdateDto;

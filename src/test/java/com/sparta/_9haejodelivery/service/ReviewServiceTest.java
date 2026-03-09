@@ -1,8 +1,6 @@
 package com.sparta._9haejodelivery.service;
 
 import com.sparta._9haejodelivery.domain.*;
-import com.sparta._9haejodelivery.domain.enums.OrderStatus;
-import com.sparta._9haejodelivery.domain.enums.UserRole;
 import com.sparta._9haejodelivery.dto.ReviewCreateRequestDto;
 import com.sparta._9haejodelivery.dto.ReviewResponseDto;
 import com.sparta._9haejodelivery.dto.ReviewUpdateDto;
