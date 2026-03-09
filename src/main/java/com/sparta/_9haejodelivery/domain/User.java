@@ -2,6 +2,7 @@ package com.sparta._9haejodelivery.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.LastModifiedDate;
 
 @Entity
 @Table(name = "p_user")
@@ -28,9 +29,8 @@ public class User extends BaseEntity{
     @Column(name = "role", nullable = false)
     private UserRole role;
 
-    public void updateProfile(String nickname, String password, String address) {
+    public void updateProfile(String nickname, String address) {
         if (nickname != null) this.nickname = nickname;
-        if (password != null) this.password = password;
         if (address != null) this.address = address;
     }
 }
