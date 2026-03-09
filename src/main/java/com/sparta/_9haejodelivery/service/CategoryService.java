@@ -44,6 +44,6 @@ public class CategoryService {
     public void deleteCategory(UUID categoryId) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
-        categoryRepository.delete(category);
+        category.markAsDeleted(null); // TODO: userId
     }
 }
