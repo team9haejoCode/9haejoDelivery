@@ -4,6 +4,7 @@ import com.sparta._9haejodelivery.common.ApiResponse;
 import com.sparta._9haejodelivery.dto.PaymentRequestDto;
 import com.sparta._9haejodelivery.dto.PaymentResponseDto;
 import com.sparta._9haejodelivery.dto.PaymentUpdateRequestDto;
+import com.sparta._9haejodelivery.global.security.UserDetailsImpl;
 import com.sparta._9haejodelivery.service.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -54,15 +56,24 @@ public class PaymentController {
     @PatchMapping("/{paymentId}")
     public ResponseEntity<ApiResponse<PaymentResponseDto>> updatePaymentStatus(
             @PathVariable("paymentId") UUID paymentId,
-            @RequestBody PaymentUpdateRequestDto requestDto) {
-        PaymentResponseDto responseDto = paymentService.updatePaymentStatus(paymentId, requestDto);
+            @RequestBody PaymentUpdateRequestDto requestDto,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        
+        String username = userDetails.getUsername();
+        PaymentResponseDto responseDto = paymentService.updatePaymentStatus(paymentId, requestDto, username);
+        
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "결제 상태 변경 성공", responseDto));
     }
 
     // 5. 결제 삭제 API (DELETE)
     @DeleteMapping("/{paymentId}")
-    public ResponseEntity<ApiResponse<Void>> deletePayment(@PathVariable("paymentId") UUID paymentId) {
-        paymentService.deletePayment(paymentId, null);
+    public ResponseEntity<ApiResponse<Void>> deletePayment(
+            @PathVariable("paymentId") UUID paymentId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        
+        String username = userDetails.getUsername();
+        paymentService.deletePayment(paymentId, username);
+        
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "요청이 정상 처리되었습니다."));
     }
 }
