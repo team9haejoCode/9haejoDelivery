@@ -25,7 +25,7 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
-    @PreAuthorize("hasAnyRole('MANAGER')")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(summary = "카테고리 생성 (관리자)", description = "새로운 카테고리를 생성합니다.")
     @PostMapping
     public ResponseEntity<ApiResponse<CategoryResponseDto>> createCategory(@Valid @RequestBody CategoryRequestDto requestDto) {
@@ -39,7 +39,7 @@ public class CategoryController {
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "카테고리 조회 성공", categoryService.getCategories()));
     }
 
-    @PreAuthorize("hasAnyRole('MANAGER')")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(summary = "카테고리 수정 (관리자)", description = "카테고리 이름을 수정합니다.")
     @PatchMapping("/{categoryId}")
     public ResponseEntity<ApiResponse<CategoryResponseDto>> updateCategory(
@@ -48,7 +48,7 @@ public class CategoryController {
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "카테고리 수정 성공", categoryService.updateCategory(categoryId, requestDto)));
     }
 
-    @PreAuthorize("hasAnyRole('MANAGER')")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(summary = "카테고리 삭제 (관리자)", description = "카테고리를 소프트 삭제합니다.")
     @DeleteMapping("/{categoryId}")
     public ResponseEntity<ApiResponse<Void>> deleteCategory(
