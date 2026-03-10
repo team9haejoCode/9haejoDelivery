@@ -18,7 +18,7 @@ public class OrderItem extends BaseEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
-  private UUID id;
+  private UUID orderItemId;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "order_id")
@@ -36,11 +36,7 @@ public class OrderItem extends BaseEntity {
 
 
   @Builder
-  public OrderItem(
-      Product product,
-      Integer quantity,
-      Integer unitPrice
-  ) {
+  public OrderItem(Product product, Integer quantity, Integer unitPrice) {
     this.product = product;
     this.quantity = quantity;
     this.unitPrice = unitPrice;
