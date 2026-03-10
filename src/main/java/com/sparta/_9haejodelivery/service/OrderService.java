@@ -9,7 +9,6 @@ import com.sparta._9haejodelivery.repository.OrderRepository;
 import com.sparta._9haejodelivery.repository.ProductRepository;
 import com.sparta._9haejodelivery.repository.StoreRepository;
 import com.sparta._9haejodelivery.repository.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -151,7 +150,7 @@ public class OrderService {
   ) {
     // 비관적 락
     Order order = orderRepository.findByIdForUpdate(orderId)
-                                 .orElseThrow(() -> new EntityNotFoundException("해당 주문을 찾을 수 없습니다. ID: " + orderId));
+                                 .orElseThrow(() -> new BusinessException(ErrorCode.ORDER_NOT_FOUND));
     // 현재 DB 유저 정보 기준
     User user = findUserOrThrow(userDetails.getUsername());
 
