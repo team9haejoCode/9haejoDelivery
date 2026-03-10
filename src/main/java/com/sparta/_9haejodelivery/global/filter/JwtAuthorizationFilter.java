@@ -2,6 +2,7 @@ package com.sparta._9haejodelivery.global.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta._9haejodelivery.common.ApiResponse;
+import com.sparta._9haejodelivery.common.ErrorCode;
 import com.sparta._9haejodelivery.global.jwt.JwtUtil;
 import com.sparta._9haejodelivery.global.security.UserDetailsServiceImpl;
 import io.jsonwebtoken.Claims;
@@ -10,7 +11,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -30,7 +30,6 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         this.userDetailsService = userDetailsService;
     }
 
-
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain filterChain) throws ServletException, IOException {
         log.info("요청 들어옴! URL: " + req.getRequestURI());
@@ -44,7 +43,8 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 try {
                     setAuthentication(info.getSubject());
                 } catch (Exception e) {
-                    log.error("인증 객체 생성 실패: " + e.getMessage());
+                    sendErrorResponse(res, ErrorCode.USER_INFO_MISMATCH);
+                    return;
                 }
             }
         }
@@ -68,9 +68,14 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 
+    private void sendErrorResponse(HttpServletResponse response, ErrorCode errorCode) throws IOException {
+        response.setStatus(errorCode.getHttpStatus().value());
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
 
+        ApiResponse<Void> apiResponse = ApiResponse.fail(errorCode.getHttpStatus(), errorCode.getMessage());
 
-
-
+        new ObjectMapper().writeValue(response.getWriter(), apiResponse);
+    }
 
 }
