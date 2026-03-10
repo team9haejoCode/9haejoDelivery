@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -68,9 +70,10 @@ public class ProductController {
     // 상품 삭제 API, 권한: OWNER, MANAGER, MASTER
     @PreAuthorize("hasAnyRole('OWNER', 'MANAGER', 'MASTER')")
     @DeleteMapping("/products/{productId}")
-    public ApiResponse<Void> deleteProduct(@PathVariable UUID productId) {
-        // TODO: 향후 실제 로그인 한 유저 ID를 넘기도록 수정
-        productService.deleteProduct(productId, "system_user");
+    public ApiResponse<Void> deleteProduct(
+            @PathVariable UUID productId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        productService.deleteProduct(productId, userDetails.getUsername());
         return ApiResponse.success(HttpStatus.OK, "상품 삭제 성공");
     }
 }
