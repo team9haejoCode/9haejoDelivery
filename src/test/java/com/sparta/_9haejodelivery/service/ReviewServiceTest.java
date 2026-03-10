@@ -1,11 +1,9 @@
 package com.sparta._9haejodelivery.service;
 
 import com.sparta._9haejodelivery.domain.*;
-import com.sparta._9haejodelivery.domain.enums.OrderStatus;
-import com.sparta._9haejodelivery.domain.enums.UserRole;
-import com.sparta._9haejodelivery.dto.ReviewCreateRequestDTO;
-import com.sparta._9haejodelivery.dto.ReviewResponseDTO;
-import com.sparta._9haejodelivery.dto.ReviewUpdateDTO;
+import com.sparta._9haejodelivery.dto.ReviewCreateRequestDto;
+import com.sparta._9haejodelivery.dto.ReviewResponseDto;
+import com.sparta._9haejodelivery.dto.ReviewUpdateDto;
 import com.sparta._9haejodelivery.repository.ReviewRepository;
 import com.sparta._9haejodelivery.repository.UserRepository;
 import com.sparta._9haejodelivery.repository.temp_OrderRepository;
@@ -50,6 +48,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
     Order order;
     Review review;
     Pageable pageable;
+    Region region;
 
     @BeforeEach
     void setUp() {
@@ -60,6 +59,12 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
         reviewService=new ReviewService(reviewRepository,userRepository,orderRepository);
 
         pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
+
+        region = Region.builder()
+                .bcode("bcode")
+                .sigungu("sigungu")
+                .bcodeId("bcodeId")
+                .build();
 
         customer = User.builder()
                 .username("customer")
@@ -89,7 +94,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
         store = Store.builder()
                 .storeName("store")
                 .category(category)
-                .regionId(UUID.nameUUIDFromBytes("region".getBytes()))
+                .region(region)
                 .owner(owner)
                 .address("address")
                 .description("description")
@@ -102,7 +107,6 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
                 .status(OrderStatus.DELIVERY_COMPLETED).build();
 
         review = Review.builder()
-                .reviewId(UUID.nameUUIDFromBytes("review".getBytes()))
                 .user(customer)
                 .order(order)
                 .rating(BigDecimal.valueOf(5))
@@ -113,6 +117,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
         ReflectionTestUtils.setField(review, "createdBy", customer.getUsername());
         ReflectionTestUtils.setField(store, "storeId", UUID.nameUUIDFromBytes("store".getBytes()));
         ReflectionTestUtils.setField(order, "orderId", UUID.nameUUIDFromBytes("order".getBytes()));
+        ReflectionTestUtils.setField(review, "reviewId", UUID.nameUUIDFromBytes("review".getBytes()));
     }
 
 
@@ -123,7 +128,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
         given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
         given(orderRepository.findById(order.getOrderId())).willReturn(Optional.of(order));
 
-        ReviewCreateRequestDTO dto = ReviewCreateRequestDTO.builder()
+        ReviewCreateRequestDto dto = ReviewCreateRequestDto.builder()
                 .orderId(order.getOrderId())
                 .rating("5")
                 .description("good")
@@ -151,7 +156,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
         //given
         given(userRepository.findById(anyString())).willReturn(Optional.empty());
 
-        ReviewCreateRequestDTO dto = ReviewCreateRequestDTO.builder()
+        ReviewCreateRequestDto dto = ReviewCreateRequestDto.builder()
                 .orderId(order.getOrderId())
                 .rating("5")
                 .description("good")
@@ -170,7 +175,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
         given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
         given(orderRepository.findById(order.getOrderId())).willReturn(Optional.empty());
 
-        ReviewCreateRequestDTO dto = ReviewCreateRequestDTO.builder()
+        ReviewCreateRequestDto dto = ReviewCreateRequestDto.builder()
                 .orderId(order.getOrderId())
                 .rating("5")
                 .description("good")
@@ -190,7 +195,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
         given(orderRepository.findById(order.getOrderId())).willReturn(Optional.of(order));
         given(reviewRepository.findByOrder(order)).willReturn(Optional.of(review));
 
-        ReviewCreateRequestDTO dto = ReviewCreateRequestDTO.builder()
+        ReviewCreateRequestDto dto = ReviewCreateRequestDto.builder()
                 .orderId(order.getOrderId())
                 .rating("5")
                 .description("good")
@@ -211,7 +216,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
         given(reviewRepository.findAll(any(Pageable.class))).willReturn(page);
 
         //when & then
-        Page<ReviewResponseDTO> result = reviewService.findAllReviews(pageable);
+        Page<ReviewResponseDto> result = reviewService.findAllReviews(pageable);
         assertThat(result).hasSize(1);
     }
 
@@ -222,7 +227,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
         given(reviewRepository.findById(review.getReviewId())).willReturn(Optional.of(review));
 
         //when & then
-        ReviewResponseDTO result = reviewService.findReviewById(review.getReviewId());
+        ReviewResponseDto result = reviewService.findReviewById(review.getReviewId());
         assertThat(result.getReviewId()).isEqualTo(review.getReviewId());
         assertThat(result.getRating()).isEqualTo(review.getRating().toPlainString());
         assertThat(result.getDescription()).isEqualTo(review.getDescription());
@@ -239,7 +244,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
         given(reviewRepository.findByUser(customer,pageable)).willReturn(slice);
 
         //when & then
-        Slice<ReviewResponseDTO> result = reviewService.findMyReviews(customer.getUsername(),pageable);
+        Slice<ReviewResponseDto> result = reviewService.findMyReviews(customer.getUsername(),pageable);
         assertThat(result).hasSize(1);
     }
 
@@ -253,7 +258,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
         given(reviewRepository.findByStoreId(any(UUID.class),eq(pageable))).willReturn(slice);
 
         //when & then
-        Slice<ReviewResponseDTO> result = reviewService.findReviewsByStoreId(store.getStoreId(),pageable);
+        Slice<ReviewResponseDto> result = reviewService.findReviewsByStoreId(store.getStoreId(),pageable);
         assertThat(result).hasSize(1);
     }
 
@@ -263,7 +268,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
         //given
         given(reviewRepository.findById(review.getReviewId())).willReturn(Optional.of(review));
         given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
-        ReviewUpdateDTO dto = ReviewUpdateDTO.builder()
+        ReviewUpdateDto dto = ReviewUpdateDto.builder()
                 .rating("1")
                 .description("bad")
                 .build();
@@ -284,7 +289,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
     void updateReview_NotFoundUser() {
         //given
         given(userRepository.findById(customer.getUsername())).willReturn(Optional.empty());
-        ReviewUpdateDTO dto = ReviewUpdateDTO.builder()
+        ReviewUpdateDto dto = ReviewUpdateDto.builder()
                 .rating("1")
                 .description("bad")
                 .build();
@@ -300,7 +305,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
         //given
         given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
         given(reviewRepository.findById(review.getReviewId())).willReturn(Optional.empty());
-        ReviewUpdateDTO dto = ReviewUpdateDTO.builder()
+        ReviewUpdateDto dto = ReviewUpdateDto.builder()
                 .rating("1")
                 .description("bad")
                 .build();

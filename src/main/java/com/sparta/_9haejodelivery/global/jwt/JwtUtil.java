@@ -20,7 +20,8 @@ public class JwtUtil {
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String AUTHORIZATION_KEY = "auth";
     public static final String BEARER_PREFIX = "Bearer ";
-    private final long TOKEN_TIME = 60 * 60 * 1000L; // 60분
+    public static final long ACCESS_TOKEN_TIME = 30 * 60 * 1000L; // 30분
+    public static final long REFRESH_TOKEN_TIME =7 * 24 * 60 * 60 * 1000L; //일주일
 
     @Value("${jwt.secret.key}")
     private String secretKey;
@@ -32,16 +33,27 @@ public class JwtUtil {
         key = Keys.hmacShaKeyFor(bytes);
     }
 
-    public String createToken(String username, UserRole role) {
+    public String createAccessToken(String username, UserRole role) {
         Date date = new Date();
 
         return BEARER_PREFIX +
                 Jwts.builder()
                         .subject(username) // setSubject -> subject
-                        .claim(AUTHORIZATION_KEY, role) // 권한 정보
-                        .expiration(new Date(date.getTime() + TOKEN_TIME)) // setExpiration -> expiration
+                        .claim(AUTHORIZATION_KEY, role.getAuthority()) // 권한 정보
+                        .expiration(new Date(date.getTime() + ACCESS_TOKEN_TIME)) // setExpiration -> expiration
                         .issuedAt(date) // setIssuedAt -> issuedAt
                         .signWith(key) // 알고리즘은 key 설정에 따라 자동 선택됨
+                        .compact();
+    }
+
+    public String createRefreshToken(String username){
+        Date date = new Date();
+        return BEARER_PREFIX +
+                Jwts.builder()
+                        .subject(username)
+                        .expiration(new Date(date.getTime() + REFRESH_TOKEN_TIME))
+                        .issuedAt(date)
+                        .signWith(key)
                         .compact();
     }
 

@@ -29,6 +29,9 @@ public class StoreResponseDto {
     @Schema(description = "매장 설명")
     private final String description;
 
+    @Schema(description = "숨김 여부", example = "false")
+    private final Boolean isHide;
+
     @Schema(description = "생성 일시")
     private final LocalDateTime createdAt;
 
@@ -42,6 +45,7 @@ public class StoreResponseDto {
         this.bcodeId = store.getRegion().getBcodeId();
         this.address = store.getAddress();
         this.description = store.getDescription();
+        this.isHide = store.getIsHide();
         this.createdAt = store.getCreatedAt();
         this.updatedAt = store.getUpdatedAt();
     }

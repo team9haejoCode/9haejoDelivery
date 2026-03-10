@@ -1,5 +1,7 @@
 package com.sparta._9haejodelivery.service;
 
+import com.sparta._9haejodelivery.common.BusinessException;
+import com.sparta._9haejodelivery.common.ErrorCode;
 import com.sparta._9haejodelivery.domain.Category;
 import com.sparta._9haejodelivery.dto.CategoryRequestDto;
 import com.sparta._9haejodelivery.dto.CategoryResponseDto;
@@ -35,7 +37,7 @@ public class CategoryService {
     @Transactional
     public CategoryResponseDto updateCategory(UUID categoryId, CategoryRequestDto requestDto) {
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
         category.updateName(requestDto.getCategoryName());
         return new CategoryResponseDto(category);
     }
@@ -43,7 +45,7 @@ public class CategoryService {
     @Transactional
     public void deleteCategory(UUID categoryId) {
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
-        categoryRepository.delete(category);
+                .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
+        category.markAsDeleted(null); // TODO: userId
     }
 }

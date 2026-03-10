@@ -1,7 +1,10 @@
 package com.sparta._9haejodelivery.domain;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.validator.constraints.Range;
 
 import java.math.BigDecimal;
@@ -10,9 +13,7 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-@Builder
 @Table(name="P_REVIEWS")
 public class Review extends  BaseEntity{
     @Id
@@ -35,4 +36,13 @@ public class Review extends  BaseEntity{
 
     @Column(name = "is_hide")
     private Boolean isHide=false;
+
+    @Builder
+    public Review(User user, Order order, BigDecimal rating, String description, Boolean isHide) {
+        this.user = user;
+        this.order = order;
+        this.rating = rating;
+        this.description = description;
+        this.isHide = isHide;
+    }
 }
