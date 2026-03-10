@@ -5,6 +5,8 @@ import com.sparta._9haejodelivery.common.ErrorCode;
 import com.sparta._9haejodelivery.domain.Category;
 import com.sparta._9haejodelivery.domain.Region;
 import com.sparta._9haejodelivery.domain.Store;
+import com.sparta._9haejodelivery.domain.User;
+import com.sparta._9haejodelivery.domain.UserRole;
 import com.sparta._9haejodelivery.dto.StoreRequestDto;
 import com.sparta._9haejodelivery.dto.StoreResponseDto;
 import com.sparta._9haejodelivery.dto.StoreUpdateRequestDto;
@@ -33,7 +35,7 @@ public class StoreService {
     private final RegionRepository regionRepository;
 
     @Transactional
-    public StoreResponseDto createStore(StoreRequestDto requestDto) {
+    public StoreResponseDto createStore(StoreRequestDto requestDto, User owner) {
         Category category = categoryRepository.findById(requestDto.getCategoryId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
 
@@ -43,6 +45,7 @@ public class StoreService {
         Store store = Store.builder()
                 .storeName(requestDto.getStoreName())
                 .category(category)
+                .owner(owner)
                 .region(region)
                 .address(requestDto.getAddress())
                 .description(requestDto.getDescription())
@@ -82,9 +85,14 @@ public class StoreService {
     }
 
     @Transactional
-    public StoreResponseDto updateStore(UUID storeId, StoreUpdateRequestDto requestDto) {
+    public StoreResponseDto updateStore(UUID storeId, StoreUpdateRequestDto requestDto, User user) {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.STORE_NOT_FOUND));
+
+        if (user.getRole() == UserRole.OWNER &&
+                (store.getOwner() == null || !store.getOwner().getUsername().equals(user.getUsername()))) {
+            throw new BusinessException(ErrorCode.STORE_ACCESS_DENIED);
+        }
 
         Category category = requestDto.getCategoryId() != null
                 ? categoryRepository.findById(requestDto.getCategoryId())
@@ -108,10 +116,16 @@ public class StoreService {
     }
 
     @Transactional
-    public void deleteStore(UUID storeId) {
+    public void deleteStore(UUID storeId, User user) {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.STORE_NOT_FOUND));
-        store.markAsDeleted(null); // TODO: userId 
+
+        if (user.getRole() == UserRole.OWNER &&
+                (store.getOwner() == null || !store.getOwner().getUsername().equals(user.getUsername()))) {
+            throw new BusinessException(ErrorCode.STORE_ACCESS_DENIED);
+        }
+
+        store.markAsDeleted(user.getUsername());
     }
 
     private Pageable buildPageable(int page, int size, String sortDirection) {

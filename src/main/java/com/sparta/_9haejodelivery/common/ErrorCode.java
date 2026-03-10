@@ -21,6 +21,9 @@ public enum ErrorCode {
     // Region
     REGION_NOT_FOUND(HttpStatus.NOT_FOUND, "지역을 찾을 수 없습니다."),
 
+    // Auth
+    STORE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "해당 매장에 대한 권한이 없습니다."),
+
     // Product
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "상품을 찾을 수 없습니다."),
 
