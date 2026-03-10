@@ -17,17 +17,12 @@ public class RefreshToken {
     @Column(nullable = false)
     private String token;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private UserRole role;
-
-    public RefreshToken(String username, String token, UserRole role) {
+    public RefreshToken(String username, String token) {
         this.username = username;
         this.token = token;
-        this.role = role;
     }
 
-    public void updateToken(String newToken, UserRole newRole) {
+    public void updateToken(String newToken) {
         this.token = newToken;
-        this.role = newRole;
-    }}
+    }
+}

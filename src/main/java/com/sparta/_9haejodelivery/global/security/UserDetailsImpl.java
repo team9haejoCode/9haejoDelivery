@@ -13,26 +13,26 @@ import java.util.Collection;
 @Getter
 public class UserDetailsImpl implements UserDetails {
 
-    private final User user;
+    private User user;
+    private final String username;
+    private final UserRole role;
+    private final String password;
 
     public UserDetailsImpl(User user) {
         this.user = user;
+        this.username = user.getUsername();
+        this.role = user.getRole();
+        this.password = user.getPassword();
     }
 
-    @Override
-    public String getPassword() {
-        return user.getPassword();
-    }
-
-    @Override
-    public String getUsername() {
-        return user.getUsername();
+    public UserDetailsImpl(String username, String role) {
+        this.username = username;
+        this.role = UserRole.valueOf(role);
+        this.password = null;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        //생성자로 넘겨받은 user 그대로 역할을 꺼내 옴.(최신)
-        UserRole role = user.getRole();
         String authority = role.getAuthority();
 
         SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(authority);
@@ -40,5 +40,30 @@ public class UserDetailsImpl implements UserDetails {
         authorities.add(simpleGrantedAuthority);
 
         return authorities;
+    }
+
+    @Override
+    public String getPassword() {
+        return this.password;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return UserDetails.super.isAccountNonExpired();
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return UserDetails.super.isAccountNonLocked();
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return UserDetails.super.isCredentialsNonExpired();
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return UserDetails.super.isEnabled();
     }
 }

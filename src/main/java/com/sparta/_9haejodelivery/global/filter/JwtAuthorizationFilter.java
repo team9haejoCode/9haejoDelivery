@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta._9haejodelivery.common.ApiResponse;
 import com.sparta._9haejodelivery.common.ErrorCode;
 import com.sparta._9haejodelivery.global.jwt.JwtUtil;
+import com.sparta._9haejodelivery.global.security.UserDetailsImpl;
 import com.sparta._9haejodelivery.global.security.UserDetailsServiceImpl;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
@@ -19,6 +20,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
+
+import static com.sparta._9haejodelivery.global.jwt.JwtUtil.AUTHORIZATION_KEY;
 
 @Slf4j(topic = "JWT 검증 및 인가")
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
@@ -41,7 +44,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 log.info("토큰 유효성 검사 성공");
                 Claims info = jwtUtil.getUserInfoFromToken(tokenValue);
                 try {
-                    setAuthentication(info.getSubject());
+                    setAuthentication(info.getSubject(), info.get(AUTHORIZATION_KEY, String.class));
                 } catch (Exception e) {
                     sendErrorResponse(res, ErrorCode.USER_INFO_MISMATCH);
                     return;
@@ -52,18 +55,17 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         filterChain.doFilter(req, res);
     }
 
-
     // 인증 객체 생성 및 SecurityContextHolder에 저장
-    public void setAuthentication(String username) {
+    public void setAuthentication(String username, String role) {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
-        Authentication authentication = createAuthentication(username);
+        Authentication authentication = createAuthentication(username, role);
         context.setAuthentication(authentication);
 
         SecurityContextHolder.setContext(context);
     }
 
-    private Authentication createAuthentication(String username) {
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+    private Authentication createAuthentication(String username,String role) {
+        UserDetails userDetails = new UserDetailsImpl(username, role);
         log.info("createAuthentication 유저 권한 확인: " + userDetails.getAuthorities().toString());
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }

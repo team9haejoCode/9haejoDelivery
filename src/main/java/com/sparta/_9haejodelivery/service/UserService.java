@@ -74,7 +74,10 @@ public class UserService {
             throw new BusinessException(ErrorCode.USER_INFO_MISMATCH);
         }
 
-        UserRole role = refreshToken.getRole();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        UserRole role = user.getRole();
 
         String newAccessToken = jwtUtil.createAccessToken(username, role);
 

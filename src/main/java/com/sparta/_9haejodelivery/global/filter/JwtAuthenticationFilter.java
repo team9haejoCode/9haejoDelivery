@@ -66,22 +66,16 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String accessToken = jwtUtil.createAccessToken(username, role);
         String refreshToken = jwtUtil.createRefreshToken(username);
 
-//        RefreshToken refreshToken = refreshTokenRepository.findById(username)
-//                .orElse(new RefreshToken(username, refreshTokenValue, role));
-//
-//        refreshToken.updateToken(refreshTokenValue, role);
-//        refreshTokenRepository.save(refreshToken);
-
         refreshTokenRepository.findById(username)
                 .ifPresentOrElse(
                         // 1. 이미 있으면? 값만 업데이트
                         (existingToken) -> {
-                            existingToken.updateToken(refreshToken, role);
+                            existingToken.updateToken(refreshToken);
                             refreshTokenRepository.save(existingToken);
                         },
                         // 2. 없으면? 새로 만들어서 저장
                         () -> {
-                            RefreshToken newToken = new RefreshToken(username, refreshToken, role);
+                            RefreshToken newToken = new RefreshToken(username, refreshToken);
                             refreshTokenRepository.save(newToken);
                         }
                 );
