@@ -1,5 +1,7 @@
 package com.sparta._9haejodelivery.service;
 
+import com.sparta._9haejodelivery.common.BusinessException;
+import com.sparta._9haejodelivery.common.ErrorCode;
 import com.sparta._9haejodelivery.domain.Product;
 import com.sparta._9haejodelivery.domain.Store;
 import com.sparta._9haejodelivery.dto.ProductCreateRequestDto;
@@ -29,7 +31,7 @@ public class ProductService {
     @Transactional
     public ProductResponseDto createProduct(ProductCreateRequestDto requestDto, MultipartFile image) throws IOException {
         Store store = storeRepository.findById(UUID.fromString(requestDto.getStoreId()))
-                .orElseThrow(() -> new IllegalArgumentException("매장을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.STORE_NOT_FOUND));
 
         String imagePath = localFileService.saveFile(image);
 
@@ -49,7 +51,7 @@ public class ProductService {
     @Transactional
     public ProductResponseDto updateProduct(UUID productId, ProductUpdateRequestDto requestDto) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
 
         product.updateProduct(
                 requestDto.getProductName(),
@@ -76,14 +78,14 @@ public class ProductService {
 
     public ProductResponseDto getProductDetail(UUID productId) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
         return ProductResponseDto.from(product);
     }
 
     @Transactional
     public void deleteProduct(UUID productId, String username) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
         product.markAsDeleted(username);
     }
 }

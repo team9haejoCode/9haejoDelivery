@@ -21,6 +21,11 @@ spring:
     init:
       mode: always
 
-jwt:
-  secret:
-    key: ${JWT_SECRET_KEY}
+  jwt:
+    secret:
+      key: ${JWT_SECRET_KEY}
+
+  ai:
+    gemini:
+      apikey: ${GOOGLE_AI_STUDIO_KEY}
+      model: "gemini-1.5-flash"
