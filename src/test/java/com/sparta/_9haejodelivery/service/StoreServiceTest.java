@@ -4,6 +4,8 @@ import com.sparta._9haejodelivery.common.BusinessException;
 import com.sparta._9haejodelivery.domain.Category;
 import com.sparta._9haejodelivery.domain.Region;
 import com.sparta._9haejodelivery.domain.Store;
+import com.sparta._9haejodelivery.domain.User;
+import com.sparta._9haejodelivery.domain.UserRole;
 import com.sparta._9haejodelivery.dto.StoreRequestDto;
 import com.sparta._9haejodelivery.dto.StoreResponseDto;
 import com.sparta._9haejodelivery.dto.StoreUpdateRequestDto;
@@ -78,6 +80,15 @@ class StoreServiceTest {
         return dto;
     }
 
+    private User createUser(String username, UserRole role) {
+        return User.builder()
+                .username(username)
+                .nickname("닉네임_" + username)
+                .password("password")
+                .role(role)
+                .build();
+    }
+
     @Test
     @DisplayName("가게 생성 성공")
     void createStore_success() {
@@ -85,6 +96,7 @@ class StoreServiceTest {
         String storeName = "맛있는 식당";
         UUID categoryId = UUID.randomUUID();
         String bcodeId = "1111010100";
+        User owner = createUser("owner1", UserRole.OWNER);
 
         StoreRequestDto requestDto = createRequestDto(storeName, categoryId, bcodeId);
 
@@ -108,7 +120,7 @@ class StoreServiceTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         // when
-        StoreResponseDto response = storeService.createStore(requestDto);
+        StoreResponseDto response = storeService.createStore(requestDto, owner);
 
         // then
         assertEquals(storeName, response.getStoreName());
@@ -124,6 +136,7 @@ class StoreServiceTest {
         String storeName = "맛있는 식당";
         UUID categoryId = UUID.randomUUID();
         String bcodeId = "1111010100";
+        User owner = createUser("owner1", UserRole.OWNER);
 
         StoreRequestDto requestDto = createRequestDto(storeName, categoryId, bcodeId);
 
@@ -132,7 +145,33 @@ class StoreServiceTest {
 
         // when & then
         assertThrows(BusinessException.class, () ->
-                storeService.createStore(requestDto));
+                storeService.createStore(requestDto, owner));
+        verify(storeRepository, never()).save(any(Store.class));
+    }
+
+    @Test
+    @DisplayName("가게 생성 실패 - 지역 없음")
+    void createStore_fail_region_not_found() {
+        // given
+        UUID categoryId = UUID.randomUUID();
+        String bcodeId = "9999999999";
+        User owner = createUser("owner1", UserRole.OWNER);
+
+        StoreRequestDto requestDto = createRequestDto("맛있는 식당", categoryId, bcodeId);
+
+        Category category = Category.builder()
+                .categoryName("한식")
+                .build();
+
+        when(categoryRepository.findById(categoryId))
+                .thenReturn(Optional.of(category));
+
+        when(regionRepository.findById(bcodeId))
+                .thenReturn(Optional.empty());
+
+        // when & then
+        assertThrows(BusinessException.class, () ->
+                storeService.createStore(requestDto, owner));
         verify(storeRepository, never()).save(any(Store.class));
     }
 
@@ -164,6 +203,20 @@ class StoreServiceTest {
         // when & then
         storeService.getStore(storeId);
         verify(storeRepository).findById(storeId);
+    }
+
+    @Test
+    @DisplayName("가게 단건 조회 실패 - 매장 없음")
+    void getStore_fail_not_found() {
+        // given
+        UUID storeId = UUID.randomUUID();
+
+        when(storeRepository.findById(storeId))
+                .thenReturn(Optional.empty());
+
+        // when & then
+        assertThrows(BusinessException.class, () ->
+                storeService.getStore(storeId));
     }
 
     @Test
@@ -272,45 +325,6 @@ class StoreServiceTest {
     }
 
     @Test
-    @DisplayName("가게 생성 실패 - 지역 없음")
-    void createStore_fail_region_not_found() {
-        // given
-        UUID categoryId = UUID.randomUUID();
-        String bcodeId = "9999999999";
-
-        StoreRequestDto requestDto = createRequestDto("맛있는 식당", categoryId, bcodeId);
-
-        Category category = Category.builder()
-                .categoryName("한식")
-                .build();
-
-        when(categoryRepository.findById(categoryId))
-                .thenReturn(Optional.of(category));
-
-        when(regionRepository.findById(bcodeId))
-                .thenReturn(Optional.empty());
-
-        // when & then
-        assertThrows(BusinessException.class, () ->
-                storeService.createStore(requestDto));
-        verify(storeRepository, never()).save(any(Store.class));
-    }
-
-    @Test
-    @DisplayName("가게 단건 조회 실패 - 매장 없음")
-    void getStore_fail_not_found() {
-        // given
-        UUID storeId = UUID.randomUUID();
-
-        when(storeRepository.findById(storeId))
-                .thenReturn(Optional.empty());
-
-        // when & then
-        assertThrows(BusinessException.class, () ->
-                storeService.getStore(storeId));
-    }
-
-    @Test
     @DisplayName("시/군/구별 가게 조회 성공")
     void getStoresBySigungu_success() {
         // given
@@ -388,12 +402,13 @@ class StoreServiceTest {
     }
 
     @Test
-    @DisplayName("가게 수정 성공")
-    void updateStore_success() {
+    @DisplayName("가게 수정 성공 - MANAGER")
+    void updateStore_success_manager() {
         // given
         UUID storeId = UUID.randomUUID();
         UUID categoryId = UUID.randomUUID();
         String bcodeId = "1111010100";
+        User manager = createUser("manager1", UserRole.MANAGER);
 
         Store store = Store.builder()
                 .storeName("맛있는 식당")
@@ -421,7 +436,7 @@ class StoreServiceTest {
                 .thenReturn(Optional.of(region));
 
         // when
-        storeService.updateStore(storeId, requestDto);
+        storeService.updateStore(storeId, requestDto, manager);
 
         // then
         verify(storeRepository).findById(storeId);
@@ -429,10 +444,76 @@ class StoreServiceTest {
     }
 
     @Test
+    @DisplayName("가게 수정 성공 - 본인 가게 OWNER")
+    void updateStore_success_owner() {
+        // given
+        UUID storeId = UUID.randomUUID();
+        UUID categoryId = UUID.randomUUID();
+        String bcodeId = "1111010100";
+        User owner = createUser("owner1", UserRole.OWNER);
+
+        Store store = Store.builder()
+                .storeName("맛있는 식당")
+                .owner(owner)
+                .build();
+
+        StoreUpdateRequestDto requestDto = createUpdateRequestDto("짱맛있는 식당", categoryId, bcodeId);
+
+        Category category = Category.builder()
+                .categoryName("한식")
+                .build();
+
+        Region region = Region.builder()
+                .bcodeId(bcodeId)
+                .sigungu("서울특별시 종로구")
+                .bcode("청운동")
+                .build();
+
+        when(storeRepository.findById(storeId))
+                .thenReturn(Optional.of(store));
+
+        when(categoryRepository.findById(categoryId))
+                .thenReturn(Optional.of(category));
+
+        when(regionRepository.findById(bcodeId))
+                .thenReturn(Optional.of(region));
+
+        // when
+        storeService.updateStore(storeId, requestDto, owner);
+
+        // then
+        assertEquals("짱맛있는 식당", store.getStoreName());
+    }
+
+    @Test
+    @DisplayName("가게 수정 실패 - OWNER가 타인 가게 수정 시도")
+    void updateStore_fail_access_denied() {
+        // given
+        UUID storeId = UUID.randomUUID();
+        User owner = createUser("owner1", UserRole.OWNER);
+        User otherOwner = createUser("owner2", UserRole.OWNER);
+
+        Store store = Store.builder()
+                .storeName("맛있는 식당")
+                .owner(otherOwner)
+                .build();
+
+        StoreUpdateRequestDto requestDto = createUpdateRequestDto("짱맛있는 식당", null, null);
+
+        when(storeRepository.findById(storeId))
+                .thenReturn(Optional.of(store));
+
+        // when & then
+        assertThrows(BusinessException.class, () ->
+                storeService.updateStore(storeId, requestDto, owner));
+    }
+
+    @Test
     @DisplayName("가게 수정 실패 - 매장 없음")
     void updateStore_fail_store_not_found() {
         // given
         UUID storeId = UUID.randomUUID();
+        User manager = createUser("manager1", UserRole.MANAGER);
         StoreUpdateRequestDto requestDto = createUpdateRequestDto("짱맛있는 식당", UUID.randomUUID(), "1111010100");
 
         when(storeRepository.findById(storeId))
@@ -440,7 +521,7 @@ class StoreServiceTest {
 
         // when & then
         assertThrows(BusinessException.class, () ->
-                storeService.updateStore(storeId, requestDto));
+                storeService.updateStore(storeId, requestDto, manager));
     }
 
     @Test
@@ -449,6 +530,7 @@ class StoreServiceTest {
         // given
         UUID storeId = UUID.randomUUID();
         UUID categoryId = UUID.randomUUID();
+        User manager = createUser("manager1", UserRole.MANAGER);
 
         Store store = Store.builder()
                 .storeName("맛있는 식당")
@@ -464,7 +546,7 @@ class StoreServiceTest {
 
         // when & then
         assertThrows(BusinessException.class, () ->
-                storeService.updateStore(storeId, requestDto));
+                storeService.updateStore(storeId, requestDto, manager));
     }
 
     @Test
@@ -473,6 +555,7 @@ class StoreServiceTest {
         // given
         UUID storeId = UUID.randomUUID();
         String bcodeId = "9999999999";
+        User manager = createUser("manager1", UserRole.MANAGER);
 
         Store store = Store.builder()
                 .storeName("맛있는 식당")
@@ -488,7 +571,7 @@ class StoreServiceTest {
 
         // when & then
         assertThrows(BusinessException.class, () ->
-                storeService.updateStore(storeId, requestDto));
+                storeService.updateStore(storeId, requestDto, manager));
     }
 
     @Test
@@ -496,6 +579,7 @@ class StoreServiceTest {
     void updateStore_partial_skip_category_and_region() {
         // given
         UUID storeId = UUID.randomUUID();
+        User manager = createUser("manager1", UserRole.MANAGER);
 
         Category category = Category.builder()
                 .categoryName("한식")
@@ -519,7 +603,7 @@ class StoreServiceTest {
                 .thenReturn(Optional.of(store));
 
         // when
-        storeService.updateStore(storeId, requestDto);
+        storeService.updateStore(storeId, requestDto, manager);
 
         // then
         verify(categoryRepository, never()).findById(any());
@@ -528,10 +612,11 @@ class StoreServiceTest {
     }
 
     @Test
-    @DisplayName("가게 삭제 성공")
-    void deleteStore_success() {
+    @DisplayName("가게 삭제 성공 - MANAGER")
+    void deleteStore_success_manager() {
         // given
         UUID storeId = UUID.randomUUID();
+        User manager = createUser("manager1", UserRole.MANAGER);
 
         Store store = Store.builder()
                 .storeName("맛있는 식당")
@@ -541,7 +626,7 @@ class StoreServiceTest {
                 .thenReturn(Optional.of(store));
 
         // when
-        storeService.deleteStore(storeId);
+        storeService.deleteStore(storeId, manager);
 
         // then
         verify(storeRepository).findById(storeId);
@@ -549,17 +634,61 @@ class StoreServiceTest {
     }
 
     @Test
+    @DisplayName("가게 삭제 성공 - 본인 가게 OWNER")
+    void deleteStore_success_owner() {
+        // given
+        UUID storeId = UUID.randomUUID();
+        User owner = createUser("owner1", UserRole.OWNER);
+
+        Store store = Store.builder()
+                .storeName("맛있는 식당")
+                .owner(owner)
+                .build();
+
+        when(storeRepository.findById(storeId))
+                .thenReturn(Optional.of(store));
+
+        // when
+        storeService.deleteStore(storeId, owner);
+
+        // then
+        assertNotNull(store.getDeletedAt());
+    }
+
+    @Test
+    @DisplayName("가게 삭제 실패 - OWNER가 타인 가게 삭제 시도")
+    void deleteStore_fail_access_denied() {
+        // given
+        UUID storeId = UUID.randomUUID();
+        User owner = createUser("owner1", UserRole.OWNER);
+        User otherOwner = createUser("owner2", UserRole.OWNER);
+
+        Store store = Store.builder()
+                .storeName("맛있는 식당")
+                .owner(otherOwner)
+                .build();
+
+        when(storeRepository.findById(storeId))
+                .thenReturn(Optional.of(store));
+
+        // when & then
+        assertThrows(BusinessException.class, () ->
+                storeService.deleteStore(storeId, owner));
+    }
+
+    @Test
     @DisplayName("가게 삭제 실패 - 매장 없음")
     void deleteStore_fail_not_found() {
         // given
         UUID storeId = UUID.randomUUID();
+        User manager = createUser("manager1", UserRole.MANAGER);
 
         when(storeRepository.findById(storeId))
                 .thenReturn(Optional.empty());
 
         // when & then
         assertThrows(BusinessException.class, () ->
-                storeService.deleteStore(storeId));
+                storeService.deleteStore(storeId, manager));
     }
 
 }
