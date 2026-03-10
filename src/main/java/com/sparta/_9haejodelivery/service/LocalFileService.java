@@ -1,5 +1,7 @@
 package com.sparta._9haejodelivery.service;
 
+import com.sparta._9haejodelivery.common.BusinessException;
+import com.sparta._9haejodelivery.common.ErrorCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,9 +29,8 @@ public class LocalFileService {
         }
 
         // 파일 크기 검증
-        // TODO: BusinessException으로 수정 필요
         if (multipartFile.getSize() > MAX_FILE_SIZE) {
-            throw new IllegalArgumentException("파일 크기는 10MB를 초과할 수 없습니다.");
+            throw new BusinessException(ErrorCode.FILE_SIZE_EXCEEDED);
         }
 
         File directory = new File(fileDir);
@@ -43,11 +44,8 @@ public class LocalFileService {
         String fullPath = fileDir + storeFilename;
 
         // 파일 확장자 검증
-        // TODO: BusinessException으로 수정 필요
         if (!ALLOWED_EXTENSIONS.contains(extension.toLowerCase())) {
-            throw new IllegalArgumentException(
-                    "허용되지 않은 파일 형식입니다."
-            );
+            throw new BusinessException(ErrorCode.INVALID_FILE_EXTENSION);
         }
 
         multipartFile.transferTo(new File(fullPath));
@@ -55,10 +53,9 @@ public class LocalFileService {
         return "/images/" + storeFilename;
     }
 
-    // TODO: BusinessException으로 수정 필요
     private String extractExtension(String originalFilename) {
         if(originalFilename == null || !originalFilename.contains(".")) {
-            throw new IllegalArgumentException("파일 확장자가 없습니다.");
+            throw new BusinessException(ErrorCode.INVALID_FILE_NAME);
         }
 
         // 경로 정규화
