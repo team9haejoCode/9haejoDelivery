@@ -4,6 +4,7 @@ import com.sparta._9haejodelivery.common.ApiResponse;
 import com.sparta._9haejodelivery.dto.ReviewCreateRequestDto;
 import com.sparta._9haejodelivery.dto.ReviewResponseDto;
 import com.sparta._9haejodelivery.dto.ReviewUpdateDto;
+import com.sparta._9haejodelivery.global.security.UserDetailsImpl;
 import com.sparta._9haejodelivery.service.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,7 +14,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.AccessDeniedException;
@@ -32,7 +32,7 @@ public class ReviewController {
     @Operation(summary = "리뷰 작성")
     @PostMapping("/")
     public ResponseEntity<ApiResponse<String>> createReview(@RequestBody ReviewCreateRequestDto req,
-                                                            @AuthenticationPrincipal UserDetails userDetails){
+                                                            @AuthenticationPrincipal UserDetailsImpl userDetails){
         String reviewId=reviewService.createReview(req, userDetails.getUsername());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(HttpStatus.CREATED ,"리뷰가 작성되었습니다.",reviewId));
@@ -85,7 +85,7 @@ public class ReviewController {
 
     @Operation(summary = "작성한 리뷰 조회")
     @GetMapping("/myReviews")
-    public ResponseEntity<ApiResponse<Slice<ReviewResponseDto>>> getMyReviews(@AuthenticationPrincipal UserDetails userDetails,
+    public ResponseEntity<ApiResponse<Slice<ReviewResponseDto>>> getMyReviews(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                               @PageableDefault
                                                                      (size = 10,
                                                                              sort = "createdAt",
@@ -105,7 +105,7 @@ public class ReviewController {
     @PatchMapping("/{reviewId}")
     public ResponseEntity<ApiResponse<String>> updateReview(@PathVariable String reviewId,
                                                             @RequestBody ReviewUpdateDto req,
-                                                            @AuthenticationPrincipal UserDetails userDetails)
+                                                            @AuthenticationPrincipal UserDetailsImpl userDetails)
             throws AccessDeniedException {
         reviewService.updateReview(UUID
                         .fromString(reviewId)
@@ -119,7 +119,7 @@ public class ReviewController {
     @Operation(summary = "리뷰 삭제", description = "소프트 삭제")
     @DeleteMapping("/{reviewId}")
     public ResponseEntity<ApiResponse<String>> deleteReview(@PathVariable UUID reviewId,
-                                                            @AuthenticationPrincipal UserDetails userDetails)
+                                                            @AuthenticationPrincipal UserDetailsImpl userDetails)
             throws AccessDeniedException {
         reviewService.deleteReview(reviewId,userDetails.getUsername());
         return ResponseEntity.status(HttpStatus.OK)

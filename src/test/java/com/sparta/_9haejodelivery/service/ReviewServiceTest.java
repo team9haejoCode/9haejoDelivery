@@ -4,9 +4,9 @@ import com.sparta._9haejodelivery.domain.*;
 import com.sparta._9haejodelivery.dto.ReviewCreateRequestDto;
 import com.sparta._9haejodelivery.dto.ReviewResponseDto;
 import com.sparta._9haejodelivery.dto.ReviewUpdateDto;
+import com.sparta._9haejodelivery.repository.OrderRepository;
 import com.sparta._9haejodelivery.repository.ReviewRepository;
 import com.sparta._9haejodelivery.repository.UserRepository;
-import com.sparta._9haejodelivery.repository.temp_OrderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,7 +37,7 @@ import static org.mockito.Mockito.when;
 class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환경에서 다시 테스트
     @Mock
     private ReviewRepository reviewRepository;
-    private temp_OrderRepository orderRepository;
+    private OrderRepository orderRepository;
     private UserRepository userRepository;
 
     private ReviewService reviewService;
@@ -53,7 +53,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
     @BeforeEach
     void setUp() {
         userRepository= Mockito.mock(UserRepository.class);
-        orderRepository= Mockito.mock(temp_OrderRepository.class);
+        orderRepository= Mockito.mock(OrderRepository.class);
         reviewRepository= Mockito.mock(ReviewRepository.class);
 
         reviewService=new ReviewService(reviewRepository,userRepository,orderRepository);
@@ -126,7 +126,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
     void createReview() {
         //given
         given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
-        given(orderRepository.findById(order.getOrderId())).willReturn(Optional.of(order));
+        given(orderRepository.findByOrderId(order.getOrderId())).willReturn(Optional.of(order));
 
         ReviewCreateRequestDto dto = ReviewCreateRequestDto.builder()
                 .orderId(order.getOrderId())
@@ -173,7 +173,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
     void createReview_NotFoundOrder() {
         //given
         given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
-        given(orderRepository.findById(order.getOrderId())).willReturn(Optional.empty());
+        given(orderRepository.findByOrderId(order.getOrderId())).willReturn(Optional.empty());
 
         ReviewCreateRequestDto dto = ReviewCreateRequestDto.builder()
                 .orderId(order.getOrderId())
@@ -192,7 +192,7 @@ class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환
     void createReview_ExistReview() {
         //given
         given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
-        given(orderRepository.findById(order.getOrderId())).willReturn(Optional.of(order));
+        given(orderRepository.findByOrderId(order.getOrderId())).willReturn(Optional.of(order));
         given(reviewRepository.findByOrder(order)).willReturn(Optional.of(review));
 
         ReviewCreateRequestDto dto = ReviewCreateRequestDto.builder()
