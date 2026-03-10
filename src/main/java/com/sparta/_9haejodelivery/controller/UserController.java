@@ -35,7 +35,7 @@ public class UserController {
         userService.signup(requestDto);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(ApiResponse.success(HttpStatus.OK, "회원가입 성공"));
+                .body(ApiResponse.success(HttpStatus.OK, "회원가입이 완료되었습니다."));
     }
 
     @PostMapping("/refresh")
@@ -50,6 +50,7 @@ public class UserController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('MANAGER')") // 관리자만 접근 가능
     @Operation(summary = "전체 유저 조회 (관리자)")
     public ResponseEntity<ApiResponse<Page<UserResponseDto>>> getUsers(
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
@@ -60,7 +61,7 @@ public class UserController {
             pageable = PageRequest.of(pageable.getPageNumber(), validatedSize, pageable.getSort());
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK, "유저 조회 성공", userService.getUsers(pageable)));
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK, "유저 조회가 완료되었습니다.", userService.getUsers(pageable)));
     }
 
     @PatchMapping("/profile/edit")
@@ -69,7 +70,7 @@ public class UserController {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @Valid @RequestBody UserUpdateProfileRequestDto requestDto) {
 
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK, "프로필 수정 성공",
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK, "프로필 수정이 완료되었습니다.",
                 userService.updateProfile(userDetails.getUsername(), requestDto)));
     }
 

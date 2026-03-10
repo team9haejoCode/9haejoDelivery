@@ -63,6 +63,9 @@ public class WebSecurityConfig {
                 authorizeHttpRequests
                         .requestMatchers("/users/signup", "/users/login").permitAll()
                         .requestMatchers("/users/refresh").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/users").hasRole("MANAGER") //유저 전체 조회
+                        .requestMatchers(HttpMethod.DELETE, "/users/withdraw/**").hasRole("MANAGER") //탈퇴 처리
+                        .requestMatchers(HttpMethod.GET, "/users/*/profile").hasRole("MANAGER")//특정 유저 상세 조회
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                                 );
