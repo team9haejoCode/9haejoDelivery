@@ -1,6 +1,6 @@
 package com.sparta._9haejodelivery.dto;
 
-import com.sparta._9haejodelivery.domain.OrderStatus;
+import com.sparta._9haejodelivery.domain.Order;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,18 +16,17 @@ import java.util.UUID;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class OrderDeleteResponseDto {
   private UUID orderId;
-  private OrderStatus status;
+  private String orderOwnerName;
+  private String deletedBy;
   private LocalDateTime deletedAt;
   private String message;
 
-  public static OrderDeleteResponseDto of(
-      UUID orderId,
-      String message
-  ) {
+  public static OrderDeleteResponseDto of(Order order, String message) {
     return OrderDeleteResponseDto.builder()
-                                 .orderId(orderId)
-                                 .status(OrderStatus.ORDER_REJECTED)
-                                 .deletedAt(LocalDateTime.now())
+                                 .orderId(order.getOrderId())
+                                 .orderOwnerName(order.getUser().getUsername())
+                                 .deletedBy(order.getDeletedBy())
+                                 .deletedAt(order.getDeletedAt())
                                  .message(message)
                                  .build();
   }

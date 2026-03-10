@@ -39,7 +39,7 @@ public class PaymentService {
     }
 
     @Transactional
-    public PaymentResponseDto updatePaymentStatus(UUID paymentId, PaymentUpdateRequestDto requestDto) {
+    public PaymentResponseDto updatePaymentStatus(UUID paymentId, PaymentUpdateRequestDto requestDto, String username) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 결제 내역을 찾을 수 없습니다. ID: " + paymentId));
 
@@ -51,10 +51,10 @@ public class PaymentService {
             payment.completePayment(fakePgId);
             
         } else if (requestedStatus == PaymentStatus.CANCELED) {
-            payment.cancelPayment("SYSTEM_UPDATE"); 
+            payment.cancelPayment(username); 
             
         } else if (requestedStatus == PaymentStatus.FAILED) {
-            payment.failedPayment("SYSTEM_UPDATE");
+            payment.failedPayment(username);
             
         } else {
             throw new IllegalArgumentException("Invalid status transition requested: " + requestedStatus);
