@@ -153,14 +153,14 @@ class ProductServiceTest {
         given(mockProduct.getProductId()).willReturn(UUID.randomUUID());
         given(mockProduct.getStore()).willReturn(mockStore);
 
-        given(productRepository.findAllByStoreId(storeId)).willReturn(List.of(mockProduct));
+        given(productRepository.findAllByStoreStoreId(storeId)).willReturn(List.of(mockProduct));
 
         // when
         List<ProductResponseDto> responses = productService.getProductsByStore(storeId);
 
         // then
         assertEquals(1, responses.size());
-        verify(productRepository).findAllByStoreId(storeId);
+        verify(productRepository).findAllByStoreStoreId(storeId);
     }
 
     @Test

@@ -71,7 +71,7 @@ public class ProductService {
     }
 
     public List<ProductResponseDto> getProductsByStore(UUID storeId) {
-        return productRepository.findAllByStoreId(storeId).stream()
+        return productRepository.findAllByStoreStoreId(storeId).stream()
                 .map(ProductResponseDto::from)
                 .collect(Collectors.toList());
     }
