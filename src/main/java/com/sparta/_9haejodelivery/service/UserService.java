@@ -1,5 +1,7 @@
 package com.sparta._9haejodelivery.service;
 
+import com.sparta._9haejodelivery.common.BusinessException;
+import com.sparta._9haejodelivery.common.ErrorCode;
 import com.sparta._9haejodelivery.domain.RefreshToken;
 import com.sparta._9haejodelivery.domain.User;
 import com.sparta._9haejodelivery.domain.UserRole;
@@ -35,11 +37,11 @@ public class UserService {
         String password = passwordEncoder.encode(requestDto.getPassword()); // 암호화!
 
         if (userRepository.existsById(username)) {
-            throw new IllegalArgumentException("중복된 사용자가 존재합니다.");
+            throw new BusinessException(ErrorCode.DUPLICATE_USERNAME);
         }
 
         if (userRepository.findByNickname(requestDto.getNickname()).isPresent()) {
-            throw new IllegalArgumentException("중복된 닉네임이 존재합니다.");
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
         }
 
         User user = User.builder()
@@ -58,18 +60,18 @@ public class UserService {
         String token = jwtUtil.substringToken(refreshTokenValue);
 
         if (!jwtUtil.validateToken(token)) {
-            throw new IllegalArgumentException("유효하지 않은 Refresh Token입니다.");
+            throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
 
         Claims info = jwtUtil.getUserInfoFromToken(token);
         String username = info.getSubject();
 
         RefreshToken refreshToken = refreshTokenRepository.findById(username)
-                .orElseThrow(() -> new IllegalArgumentException("로그아웃된 유저이거나 토큰이 존재하지 않습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.ALREADY_LOGOUT_USER));
 
         //사용자가 보낸 토큰과 DB에 저장된 토큰이 일치하는지 확인
         if (!refreshToken.getToken().equals(refreshTokenValue)) {
-            throw new IllegalArgumentException("토큰 정보가 일치하지 않습니다. 다시 로그인해주세요.[권한변경]");
+            throw new BusinessException(ErrorCode.USER_INFO_MISMATCH);
         }
 
         UserRole role = refreshToken.getRole();
@@ -94,13 +96,13 @@ public class UserService {
     @Transactional
     public UserResponseDto updateProfile(String username, UserUpdateProfileRequestDto requestDto) {
         User user = userRepository.findByUsernameAndDeletedAtIsNull(username)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없거나 탈퇴한 사용자입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         String newNickname = requestDto.getNickname();
 
         if (!user.getNickname().equals(newNickname)) {
             if (userRepository.existsByNicknameAndDeletedAtIsNull(newNickname)) {
-                throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+                throw new BusinessException(ErrorCode.DUPLICATE_NICKNAME);
             }
         }
 
@@ -112,10 +114,10 @@ public class UserService {
     @Transactional
     public void withdraw(String targetUsername, String requesterUsername) {
         User user = userRepository.findByUsername(targetUsername)
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         if (user.getDeletedAt() != null) {
-            throw new IllegalArgumentException("이미 탈퇴 처리된 사용자입니다.");
+            throw new BusinessException(ErrorCode.ALREADY_WITHDRAWN);
         }
 
         user.markAsDeleted(requesterUsername);
@@ -126,9 +128,16 @@ public class UserService {
         if (refreshTokenRepository.existsById(username)) {
             refreshTokenRepository.deleteById(username);
         } else {
-            throw new IllegalArgumentException("이미 로그아웃 상태이거나 토큰이 존재하지 않습니다.");
+            throw new BusinessException(ErrorCode.ALREADY_LOGOUT_USER);
         }
     }
 
+    @Transactional(readOnly = true)
+    public UserResponseDto getUserProfile(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        return new UserResponseDto(user);
+    }
 
 }
