@@ -21,16 +21,11 @@ spring:
     init:
       mode: always
 
-jwt:
-  secret:
-    key: ${JWT_SECRET_KEY}
+  jwt:
+    secret:
+      key: ${JWT_SECRET_KEY}
 
-ai:
-  openai:
-    api-key: ${GOOGLE_AI_STUDIO_KEY}
-    base-url: https://generativelanguage.googleapis.com/v1beta/openai/
-    chat:
-      options:
-        model: gemini-1.5-flash
-        temperature: 0.5
-        max-tokens: 500
+  ai:
+    gemini:
+      apikey: ${GOOGLE_AI_STUDIO_KEY}
+      model: "gemini-1.5-flash"
