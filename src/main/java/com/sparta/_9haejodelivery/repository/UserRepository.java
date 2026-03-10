@@ -14,7 +14,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     Optional<User> findByUsername(String username);
 
-    Page<UserResponseDto> findAllByDeletedAtIsNull(Pageable pageable);
+    Page<User> findAllByDeletedAtIsNull(Pageable pageable);
 
     Optional<User> findByUsernameAndDeletedAtIsNull(String username);
 

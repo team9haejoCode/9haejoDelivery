@@ -1,16 +1,18 @@
 package com.sparta._9haejodelivery.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-@Configuration
-public class WebConfig implements WebMvcConfigurer {
-    private final String fileDir = "file:///" + System.getProperty("user.dir") + "/uploads/";
+import java.util.List;
 
-    @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/images/**")
-                .addResourceLocations(fileDir);
-    }
+import static org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO;
+
+@Configuration
+@RequiredArgsConstructor
+//페이징 처리 시 dto를 따름
+@EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO)
+public class WebConfig implements WebMvcConfigurer {
 }
