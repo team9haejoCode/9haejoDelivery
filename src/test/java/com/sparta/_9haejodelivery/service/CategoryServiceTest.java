@@ -1,5 +1,6 @@
 package com.sparta._9haejodelivery.service;
 
+import com.sparta._9haejodelivery.common.BusinessException;
 import com.sparta._9haejodelivery.domain.Category;
 import com.sparta._9haejodelivery.dto.CategoryRequestDto;
 import com.sparta._9haejodelivery.dto.CategoryResponseDto;
@@ -18,8 +19,10 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -106,7 +109,7 @@ class CategoryServiceTest {
 
         // when & then
         assertThatThrownBy(() -> categoryService.updateCategory(categoryId, requestDto))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(BusinessException.class)
                 .hasMessage("카테고리를 찾을 수 없습니다.");
     }
 
@@ -122,7 +125,8 @@ class CategoryServiceTest {
         categoryService.deleteCategory(categoryId);
 
         // then
-        verify(categoryRepository).delete(entity);
+        verify(categoryRepository, never()).delete(any());
+        assertNotNull(entity.getDeletedAt());
     }
 
     @Test
@@ -134,7 +138,7 @@ class CategoryServiceTest {
 
         // when & then
         assertThatThrownBy(() -> categoryService.deleteCategory(categoryId))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(BusinessException.class)
                 .hasMessage("카테고리를 찾을 수 없습니다.");
     }
 }
