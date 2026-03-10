@@ -19,7 +19,10 @@ public enum ErrorCode {
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "카테고리를 찾을 수 없습니다."),
 
     // Region
-    REGION_NOT_FOUND(HttpStatus.NOT_FOUND, "지역을 찾을 수 없습니다.");
+    REGION_NOT_FOUND(HttpStatus.NOT_FOUND, "지역을 찾을 수 없습니다."),
+
+    // Auth
+    STORE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "해당 매장에 대한 권한이 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

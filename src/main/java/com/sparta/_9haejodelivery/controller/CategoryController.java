@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,7 +25,8 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
-    @Operation(summary = "카테고리 생성", description = "새로운 카테고리를 생성합니다.")
+    @PreAuthorize("hasAnyRole('MANAGER')")
+    @Operation(summary = "카테고리 생성 (관리자)", description = "새로운 카테고리를 생성합니다.")
     @PostMapping
     public ResponseEntity<ApiResponse<CategoryResponseDto>> createCategory(@Valid @RequestBody CategoryRequestDto requestDto) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -37,7 +39,8 @@ public class CategoryController {
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "카테고리 조회 성공", categoryService.getCategories()));
     }
 
-    @Operation(summary = "카테고리 수정", description = "카테고리 이름을 수정합니다.")
+    @PreAuthorize("hasAnyRole('MANAGER')")
+    @Operation(summary = "카테고리 수정 (관리자)", description = "카테고리 이름을 수정합니다.")
     @PatchMapping("/{categoryId}")
     public ResponseEntity<ApiResponse<CategoryResponseDto>> updateCategory(
             @Parameter(description = "카테고리 ID") @PathVariable UUID categoryId,
@@ -45,7 +48,8 @@ public class CategoryController {
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "카테고리 수정 성공", categoryService.updateCategory(categoryId, requestDto)));
     }
 
-    @Operation(summary = "카테고리 삭제", description = "카테고리를 소프트 삭제합니다.")
+    @PreAuthorize("hasAnyRole('MANAGER')")
+    @Operation(summary = "카테고리 삭제 (관리자)", description = "카테고리를 소프트 삭제합니다.")
     @DeleteMapping("/{categoryId}")
     public ResponseEntity<ApiResponse<Void>> deleteCategory(
             @Parameter(description = "카테고리 ID") @PathVariable UUID categoryId) {
