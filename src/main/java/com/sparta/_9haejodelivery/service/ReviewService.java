@@ -3,10 +3,10 @@ package com.sparta._9haejodelivery.service;
 import com.sparta._9haejodelivery.domain.Order;
 import com.sparta._9haejodelivery.domain.Review;
 import com.sparta._9haejodelivery.domain.User;
-import com.sparta._9haejodelivery.domain.enums.UserRole;
-import com.sparta._9haejodelivery.dto.ReviewCreateRequestDTO;
-import com.sparta._9haejodelivery.dto.ReviewResponseDTO;
-import com.sparta._9haejodelivery.dto.ReviewUpdateDTO;
+import com.sparta._9haejodelivery.domain.UserRole;
+import com.sparta._9haejodelivery.dto.ReviewCreateRequestDto;
+import com.sparta._9haejodelivery.dto.ReviewResponseDto;
+import com.sparta._9haejodelivery.dto.ReviewUpdateDto;
 import com.sparta._9haejodelivery.repository.ReviewRepository;
 import com.sparta._9haejodelivery.repository.UserRepository;
 import com.sparta._9haejodelivery.repository.temp_OrderRepository;
@@ -33,7 +33,7 @@ public class ReviewService {
     //todo: 이미 해당 주문에 대해 작성한 리뷰가 있는 경우 처리
     //생성 - ROLE=CUSTOMER 확인 -> 일단 OWNER만 차단하도록, ORDER 정보 추가  /todo: 보안 연동 후 수정
     @PreAuthorize("hasRole('ROLE_CUSTOMER')")
-    public String createReview(ReviewCreateRequestDTO dto, String username) {
+    public String createReview(ReviewCreateRequestDto dto, String username) {
 
         User user=/*userService*/ userRepository.findById(username)
                 .orElseThrow(()->new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
@@ -56,9 +56,9 @@ public class ReviewService {
     //조회 - body로 데이터 수신, ALL: 매장별 리뷰 확인 가능, CUSTOMER: 작성 리뷰 리스트 조회 가능,
     //1. 전체 리뷰 조회 - 관리자용
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public Page<ReviewResponseDTO> findAllReviews(Pageable pageable) {
+    public Page<ReviewResponseDto> findAllReviews(Pageable pageable) {
         Page<Review>reviewPage=reviewRepository.findAll(pageable);
-        return reviewPage.map(review -> ReviewResponseDTO.builder()
+        return reviewPage.map(review -> ReviewResponseDto.builder()
                 .reviewId(review.getReviewId())
                 .rating(review.getRating().toPlainString())
                 .description(review.getDescription())
@@ -68,11 +68,11 @@ public class ReviewService {
     }
 
     //2. 리뷰 상세 조회(리뷰 ID 사용)
-    public ReviewResponseDTO findReviewById(UUID reviewId) {
+    public ReviewResponseDto findReviewById(UUID reviewId) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(()->new IllegalArgumentException("해당 리뷰를 찾을 수 없습니다."));
 
-        return ReviewResponseDTO.builder()
+        return ReviewResponseDto.builder()
                 .reviewId(review.getReviewId())
                 .rating(review.getRating().toPlainString())
                 .description(review.getDescription())
@@ -82,22 +82,22 @@ public class ReviewService {
     }
 
     //3. 작성한 리뷰 조회
-    public Slice<ReviewResponseDTO> findMyReviews(String username, Pageable pageable) {
+    public Slice<ReviewResponseDto> findMyReviews(String username, Pageable pageable) {
         User user=/*userService*/ userRepository.findById(username)
                 .orElseThrow(()->new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
         Slice<Review> reviewSlice = reviewRepository.findByUser(user, pageable);
-        return reviewSlice.map(ReviewResponseDTO::new);
+        return reviewSlice.map(ReviewResponseDto::new);
     }
 
     //4. 매장별 리뷰 조회 -> todo: order를 통해 확인한 판매점 정보 이용?
-    public Slice<ReviewResponseDTO> findReviewsByStoreId(UUID storeId,Pageable pageable) {
+    public Slice<ReviewResponseDto> findReviewsByStoreId(UUID storeId, Pageable pageable) {
         Slice<Review> reviewSlice = reviewRepository.findByStoreId(storeId, pageable);
-        return reviewSlice.map(ReviewResponseDTO::new);
+        return reviewSlice.map(ReviewResponseDto::new);
     }
 
     //수정 - 작성자 확인
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_CUSTOMER')")
-    public void updateReview(UUID reviewId, ReviewUpdateDTO dto,String username) throws AccessDeniedException {
+    public void updateReview(UUID reviewId, ReviewUpdateDto dto, String username) throws AccessDeniedException {
         User user=/*userService*/ userRepository.findById(username)
                 .orElseThrow(()->new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));  //todo: user서비스 확인 후 수정
         Review review=reviewRepository.findById(reviewId)
@@ -132,4 +132,8 @@ public class ReviewService {
         reviewRepository.save(review);
     }
 
+    //매장별 평점 조회용    todo: 매장별 평점 조회가능하도록 쿼리문 작성
+    public String getStoreRating(UUID storeId) {
+        return reviewRepository.getAverageRatingByStoreId(storeId).toString();
+    }
 }
