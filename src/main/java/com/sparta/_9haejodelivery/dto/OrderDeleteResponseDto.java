@@ -21,11 +21,11 @@ public class OrderDeleteResponseDto {
   private LocalDateTime deletedAt;
   private String message;
 
-  public static OrderDeleteResponseDto of(Order order, String executorName, String message) {
+  public static OrderDeleteResponseDto of(Order order, String message) {
     return OrderDeleteResponseDto.builder()
                                  .orderId(order.getOrderId())
                                  .orderOwnerName(order.getUser().getUsername())
-                                 .deletedBy(executorName)
+                                 .deletedBy(order.getDeletedBy())
                                  .deletedAt(order.getDeletedAt())
                                  .message(message)
                                  .build();

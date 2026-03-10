@@ -14,7 +14,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class OrderCreateResponseDto {
+public class OrderCreateResponseDto { // todo: null 값 처리
 
   private UUID orderId;
   private String username;
@@ -22,9 +22,13 @@ public class OrderCreateResponseDto {
   private String storeName;
   private String status;
   private String address;
+  private String orderSummary;
   private Integer totalPrice;
   private List<OrderItemResponseDto> orderItems;
 
+  /**
+   * Entity -> DTO 변환을 위한 정적 팩토리 메서드
+   */
   public static OrderCreateResponseDto from(Order order) {
     return OrderCreateResponseDto.builder()
                                  .orderId(order.getOrderId())
@@ -33,6 +37,7 @@ public class OrderCreateResponseDto {
                                  .storeName(order.getStore().getStoreName())
                                  .status(order.getStatus().name())
                                  .address(order.getAddress())
+                                 .orderSummary(order.getOrderSummary())
                                  .totalPrice(order.getTotalPrice())
                                  .orderItems(order.getOrderItemEntities()
                                                   .stream()

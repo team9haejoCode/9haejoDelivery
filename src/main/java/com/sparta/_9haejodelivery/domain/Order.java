@@ -1,5 +1,7 @@
 package com.sparta._9haejodelivery.domain;
 
+import com.sparta._9haejodelivery.common.BusinessException;
+import com.sparta._9haejodelivery.common.ErrorCode;
 import com.sparta._9haejodelivery.domain.UserRole;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -9,7 +11,6 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.type.SqlTypes;
-import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -94,7 +95,7 @@ public class Order extends BaseEntity {
   public void makeOrderSummary() {
     List<OrderItem> items = this.getOrderItemEntities();
     if (items == null || items.isEmpty()) {
-      throw new IllegalArgumentException("주문에는 최소 1개 이상의 상품이 포함되어야 합니다.");
+      throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
     }
 
     // 첫 번째 상품명 추출
@@ -107,17 +108,17 @@ public class Order extends BaseEntity {
   public void changeStatus(OrderStatus newStatus, UserRole requesterRole) {
     // 1. 공통 규칙: 이미 최종 상태(완료/거절/취소)라면 어떤 변경도 불가능
     if (!isStateEditable())
-      throw new IllegalStateException("배달 완료/점주 거절/고객 취소 상태는 변경할 수 없습니다.");
+      throw new BusinessException(ErrorCode.ORDER_STATUS_NOT_CHANGEABLE);
 
 
     // 2. 고객(CUSTOMER) 전용 규칙
     if (requesterRole.equals(UserRole.CUSTOMER)) {
       if (newStatus != OrderStatus.ORDER_CANCELED)
-        throw new AccessDeniedException("고객은 주문 취소 요청만 가능합니다.");
+        throw new BusinessException(ErrorCode.ACCESS_DENIED);
 
 
       if (!isCancelable())
-        throw new IllegalStateException("조리가 시작된 주문은 취소할 수 없습니다.");
+        throw new BusinessException(ErrorCode.ORDER_STATUS_NOT_CHANGEABLE);
 
       // 5분 후 취소 제한
       checkCancelTimeout();
@@ -126,13 +127,13 @@ public class Order extends BaseEntity {
     // 3. 점주(OWNER) 전용 규칙
     if (requesterRole.equals(UserRole.OWNER) || requesterRole.equals(UserRole.MANAGER)) {
       if (newStatus == OrderStatus.ORDER_CANCELED)
-        throw new AccessDeniedException("점주/매니저는 주문 취소 요청을 할 수 없습니다.");
+        throw new BusinessException(ErrorCode.ACCESS_DENIED);
     }
 
     // 4. 상태 흐름 규칙: 이전 단계로 되돌리기 방지
     // (예: 배달 중 -> 접수 완료로 변경 불가)
     if (this.status.isAfter(newStatus))
-      throw new IllegalStateException("이전 단계의 상태로 되돌릴 수 없습니다.");
+      throw new BusinessException(ErrorCode.ORDER_STATUS_NOT_CHANGEABLE);
 
 
     // 5. 최종 상태 업데이트
@@ -141,11 +142,11 @@ public class Order extends BaseEntity {
 
   public void reviseAddress(String newAddress) {
     if (newAddress == null || newAddress.isBlank()) {
-      throw new IllegalArgumentException("주소는 비어있을 수 없습니다.");
+      throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
     }
 
     if (!isAddressEditable()) {
-      throw new IllegalStateException("주문 수락 상태 외의 경우, 주소를 변경할 수 없습니다.");
+      throw new BusinessException(ErrorCode.ORDER_ADDRESS_NOT_CHANGEABLE);
     }
 
     this.address = newAddress;
@@ -163,7 +164,7 @@ public class Order extends BaseEntity {
   private void checkCancelTimeout() {
     LocalDateTime now = LocalDateTime.now();
     if (getCreatedAt().plusMinutes(5).isBefore(now)) {
-      throw new IllegalStateException("주문 생성 후 5분이 경과하여 취소할 수 없습니다.");
+      throw new BusinessException(ErrorCode.ORDER_CANCEL_TIMEOUT_EXCEEDED);
     }
   }
 
