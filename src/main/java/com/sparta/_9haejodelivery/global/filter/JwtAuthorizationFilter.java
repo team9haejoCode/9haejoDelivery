@@ -19,65 +19,65 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+
 import java.io.IOException;
 
 import static com.sparta._9haejodelivery.global.jwt.JwtUtil.AUTHORIZATION_KEY;
 
 @Slf4j(topic = "JWT 검증 및 인가")
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
-    private final JwtUtil jwtUtil;
-    private final UserDetailsServiceImpl userDetailsService;
+  private final JwtUtil jwtUtil;
+  private final UserDetailsServiceImpl userDetailsService;
 
-    public JwtAuthorizationFilter(JwtUtil jwtUtil, UserDetailsServiceImpl userDetailsService) {
-        this.jwtUtil = jwtUtil;
-        this.userDetailsService = userDetailsService;
-    }
+  public JwtAuthorizationFilter(JwtUtil jwtUtil, UserDetailsServiceImpl userDetailsService) {
+    this.jwtUtil = jwtUtil;
+    this.userDetailsService = userDetailsService;
+  }
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain filterChain) throws ServletException, IOException {
-        log.info("요청 들어옴! URL: " + req.getRequestURI());
+  @Override
+  protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain filterChain) throws ServletException,IOException {
+    log.info("요청 들어옴! URL: " + req.getRequestURI());
 
-        String tokenValue = jwtUtil.getJwtFromHeader(req);
-
-        if (StringUtils.hasText(tokenValue)) {
-            if (jwtUtil.validateToken(tokenValue)) {
-                log.info("토큰 유효성 검사 성공");
-                Claims info = jwtUtil.getUserInfoFromToken(tokenValue);
-                try {
-                    setAuthentication(info.getSubject(), info.get(AUTHORIZATION_KEY, String.class));
-                } catch (Exception e) {
-                    sendErrorResponse(res, ErrorCode.USER_INFO_MISMATCH);
-                    return;
-                }
-            }
+    String tokenValue = jwtUtil.getJwtFromHeader(req);
+    if (StringUtils.hasText(tokenValue)) {
+      if (jwtUtil.validateToken(tokenValue)) {
+        log.info("토큰 유효성 검사 성공");
+        Claims info = jwtUtil.getUserInfoFromToken(tokenValue);
+        try {
+          setAuthentication(info.getSubject(), info.get(AUTHORIZATION_KEY, String.class));
+        } catch (Exception e) {
+          sendErrorResponse(res, ErrorCode.USER_INFO_MISMATCH);
+          return;
         }
-
-        filterChain.doFilter(req, res);
+      }
     }
 
-    // 인증 객체 생성 및 SecurityContextHolder에 저장
-    public void setAuthentication(String username, String role) {
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
-        Authentication authentication = createAuthentication(username, role);
-        context.setAuthentication(authentication);
+    filterChain.doFilter(req, res);
+  }
 
-        SecurityContextHolder.setContext(context);
-    }
+  // 인증 객체 생성 및 SecurityContextHolder에 저장
+  public void setAuthentication(String username, String role) {
+    SecurityContext context = SecurityContextHolder.createEmptyContext();
+    Authentication authentication = createAuthentication(username, role);
+    context.setAuthentication(authentication);
 
-    private Authentication createAuthentication(String username,String role) {
-        UserDetails userDetails = new UserDetailsImpl(username, role);
-        log.info("createAuthentication 유저 권한 확인: " + userDetails.getAuthorities().toString());
-        return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-    }
+    SecurityContextHolder.setContext(context);
+  }
 
-    private void sendErrorResponse(HttpServletResponse response, ErrorCode errorCode) throws IOException {
-        response.setStatus(errorCode.getHttpStatus().value());
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
+  private Authentication createAuthentication(String username, String role) {
+    UserDetails userDetails = new UserDetailsImpl(username, role);
+    log.info("createAuthentication 유저 권한 확인: " + userDetails.getAuthorities().toString());
+    return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+  }
 
-        ApiResponse<Void> apiResponse = ApiResponse.fail(errorCode.getHttpStatus(), errorCode.getMessage());
+  private void sendErrorResponse(HttpServletResponse response, ErrorCode errorCode) throws IOException {
+    response.setStatus(errorCode.getHttpStatus().value());
+    response.setContentType("application/json");
+    response.setCharacterEncoding("UTF-8");
 
-        new ObjectMapper().writeValue(response.getWriter(), apiResponse);
-    }
+    ApiResponse<Void> apiResponse = ApiResponse.fail(errorCode.getHttpStatus(), errorCode.getMessage());
+
+    new ObjectMapper().writeValue(response.getWriter(), apiResponse);
+  }
 
 }

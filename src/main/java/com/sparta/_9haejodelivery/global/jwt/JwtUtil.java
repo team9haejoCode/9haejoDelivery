@@ -59,13 +59,16 @@ public class JwtUtil {
                         .compact();
     }
 
-    public String getJwtFromHeader(HttpServletRequest request) {
-        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
-            return bearerToken.substring(7); // "Bearer " 이후의 토큰 값만 추출
-        }
-        return null;
+  public String getJwtFromHeader(HttpServletRequest request) {
+    String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
+    if (StringUtils.hasText(bearerToken)) {
+      if (bearerToken.startsWith(BEARER_PREFIX)) {
+        return bearerToken.substring(7);
+      }
+      return bearerToken; // 접두사 없으면 순수 토큰 반환
     }
+    return null;
+  }
 
     public String substringToken(String tokenValue) {
         if (StringUtils.hasText(tokenValue) && tokenValue.startsWith(BEARER_PREFIX)) {
