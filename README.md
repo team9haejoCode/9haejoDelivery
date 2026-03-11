@@ -7,7 +7,7 @@
 | :--- | :--- | :--- |
 | 여정진 | REVIEW & AI | 리뷰 CRUD, Gemini API 연동 및 프롬프트 엔지니어링 |
 | 조하연 | PRODUCT | 상품 CRUD |
-| 서민석 | PAYMENT | 결재 CRUD |
+| 서민석 | PAYMENT | 결제 CRUD |
 | 곽정아 | STORE & COMMON INFRA | STORE CRUD, 공통 응답/예외 처리 |
 | 백가은 | USER & AUTH | 회원 관리, JWT/Security 기반 인증/인가 |
 | 신단비 | ORDER | ORDER CRUD |
