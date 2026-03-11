@@ -1,5 +1,6 @@
 package com.sparta._9haejodelivery.service;
 
+import com.sparta._9haejodelivery.common.BusinessException;
 import com.sparta._9haejodelivery.domain.*;
 import com.sparta._9haejodelivery.dto.ReviewCreateRequestDto;
 import com.sparta._9haejodelivery.dto.ReviewResponseDto;
@@ -35,311 +36,300 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ReviewServiceTest {   //todo: 연동 및 다수의 데이터가 있는 환경에서 다시 테스트
-    @Mock
-    private ReviewRepository reviewRepository;
-    private OrderRepository orderRepository;
-    private UserRepository userRepository;
+  @Mock
+  private ReviewRepository reviewRepository;
+  private OrderRepository orderRepository;
+  private UserRepository userRepository;
 
-    private ReviewService reviewService;
+  private ReviewService reviewService;
 
-    User customer,owner,manager;
-    Category category;
-    Store store;
-    Order order;
-    Review review;
-    Pageable pageable;
-    Region region;
+  User customer, owner, manager;
+  Category category;
+  Store store;
+  Order order;
+  Review review;
+  Pageable pageable;
+  Region region;
 
-    @BeforeEach
-    void setUp() {
-        userRepository= Mockito.mock(UserRepository.class);
-        orderRepository= Mockito.mock(OrderRepository.class);
-        reviewRepository= Mockito.mock(ReviewRepository.class);
+  @BeforeEach
+  void setUp() {
+    userRepository = Mockito.mock(UserRepository.class);
+    orderRepository = Mockito.mock(OrderRepository.class);
+    reviewRepository = Mockito.mock(ReviewRepository.class);
 
-        reviewService=new ReviewService(reviewRepository,userRepository,orderRepository);
+    reviewService = new ReviewService(reviewRepository, userRepository, orderRepository);
 
-        pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
+    pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
 
-        region = Region.builder()
-                .bcode("bcode")
-                .sigungu("sigungu")
-                .bcodeId("bcodeId")
-                .build();
+    region = Region.builder().bcode("bcode").sigungu("sigungu").bcodeId("bcodeId").build();
 
-        customer = User.builder()
-                .username("customer")
-                .nickname("tester1")
-                .password("1234")
-                .address("address")
-                .role(UserRole.CUSTOMER).build();
+    customer = User.builder()
+                   .username("customer")
+                   .nickname("tester1")
+                   .password("1234")
+                   .address("address")
+                   .role(UserRole.CUSTOMER)
+                   .build();
 
-        owner = User.builder()
+    owner = User.builder()
                 .username("owner")
                 .nickname("tester2")
                 .password("1234")
                 .address("address")
-                .role(UserRole.OWNER).build();
-
-        manager = User.builder()
-                .username("manager")
-                .nickname("tester3")
-                .password("1234")
-                .address("address")
-                .role(UserRole.MANAGER).build();
-
-        category = Category.builder()
-                .categoryName("category")
+                .role(UserRole.OWNER)
                 .build();
 
-        store = Store.builder()
-                .storeName("store")
-                .category(category)
-                .region(region)
-                .owner(owner)
-                .address("address")
-                .description("description")
-                .isHide(false).build();
+    manager = User.builder()
+                  .username("manager")
+                  .nickname("tester3")
+                  .password("1234")
+                  .address("address")
+                  .role(UserRole.MANAGER)
+                  .build();
 
-        order = Order.builder()
-                .user(customer)
-                .store(store)
-                .address("address")
-                .status(OrderStatus.DELIVERY_COMPLETED).build();
+    category = Category.builder().categoryName("category").build();
 
-        review = Review.builder()
-                .user(customer)
-                .order(order)
-                .rating(BigDecimal.valueOf(5))
-                .description("good")
-                .isHide(false).build();
+    store = Store.builder()
+                 .storeName("store")
+                 .category(category)
+                 .region(region)
+                 .owner(owner)
+                 .address("address")
+                 .description("description")
+                 .isHide(false)
+                 .build();
 
-        ReflectionTestUtils.setField(review, "createdAt", LocalDateTime.now());
-        ReflectionTestUtils.setField(review, "createdBy", customer.getUsername());
-        ReflectionTestUtils.setField(store, "storeId", UUID.nameUUIDFromBytes("store".getBytes()));
-        ReflectionTestUtils.setField(order, "orderId", UUID.nameUUIDFromBytes("order".getBytes()));
-        ReflectionTestUtils.setField(review, "reviewId", UUID.nameUUIDFromBytes("review".getBytes()));
-    }
+    order = Order.builder()
+                 .user(customer)
+                 .store(store)
+                 .address("address")
+                 .status(OrderStatus.DELIVERY_COMPLETED)
+                 .build();
 
+    review = Review.builder()
+                   .user(customer)
+                   .order(order)
+                   .rating(BigDecimal.valueOf(5))
+                   .description("good")
+                   .isHide(false)
+                   .build();
 
-    @Test
-    @DisplayName("리뷰 작성 테스트 - 정상처리")
-    void createReview() {
-        //given
-        given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
-        given(orderRepository.findByOrderId(order.getOrderId())).willReturn(Optional.of(order));
+    ReflectionTestUtils.setField(review, "createdAt", LocalDateTime.now());
+    ReflectionTestUtils.setField(review, "createdBy", customer.getUsername());
+    ReflectionTestUtils.setField(store, "storeId", UUID.nameUUIDFromBytes("store".getBytes()));
+    ReflectionTestUtils.setField(order, "orderId", UUID.nameUUIDFromBytes("order".getBytes()));
+    ReflectionTestUtils.setField(review, "reviewId", UUID.nameUUIDFromBytes("review".getBytes()));
+  }
 
-        ReviewCreateRequestDto dto = ReviewCreateRequestDto.builder()
-                .orderId(order.getOrderId())
-                .rating("5")
-                .description("good")
-                .build();
+  @Test
+  @DisplayName("리뷰 작성 테스트 - 정상처리")
+  void createReview() {
+    //given
+    given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
+    given(orderRepository.findById(order.getOrderId())).willReturn(Optional.of(order));
 
-        when(reviewRepository.save(any(Review.class))).thenReturn(review);
+    ReviewCreateRequestDto dto = ReviewCreateRequestDto.builder()
+                                                       .orderId(order.getOrderId())
+                                                       .rating("5")
+                                                       .description("good")
+                                                       .build();
 
-        //when
-        reviewService.createReview(dto, customer.getUsername());
+    when(reviewRepository.save(any(Review.class))).thenReturn(review);
 
-        //then
-        ArgumentCaptor<Review> reviewArgumentCaptor = ArgumentCaptor.forClass(Review.class);
-        verify(reviewRepository).save(reviewArgumentCaptor.capture());
-        Review review = reviewArgumentCaptor.getValue();
-        assertThat(review).isNotNull();
-        assertThat(review.getOrder().getOrderId()).isEqualTo(order.getOrderId());
-        assertThat(review.getRating()).isEqualTo(dto.getRating());
-        assertThat(review.getDescription()).isEqualTo(dto.getDescription());
-        assertThat(review.getUser().getUsername()).isEqualTo(customer.getUsername());
-    }
+    //when
+    reviewService.createReview(dto, customer.getUsername());
 
-    @Test
-    @DisplayName("리뷰 작성 테스트 - 사용자 조회 실패")
-    void createReview_NotFoundUser() {
-        //given
-        given(userRepository.findById(anyString())).willReturn(Optional.empty());
+    //then
+    ArgumentCaptor<Review> reviewArgumentCaptor = ArgumentCaptor.forClass(Review.class);
+    verify(reviewRepository).save(reviewArgumentCaptor.capture());
+    Review review = reviewArgumentCaptor.getValue();
+    assertThat(review).isNotNull();
+    assertThat(review.getOrder().getOrderId()).isEqualTo(order.getOrderId());
+    assertThat(review.getRating()).isEqualTo(dto.getRating());
+    assertThat(review.getDescription()).isEqualTo(dto.getDescription());
+    assertThat(review.getUser().getUsername()).isEqualTo(customer.getUsername());
+  }
 
-        ReviewCreateRequestDto dto = ReviewCreateRequestDto.builder()
-                .orderId(order.getOrderId())
-                .rating("5")
-                .description("good")
-                .build();
+  @Test
+  @DisplayName("리뷰 작성 테스트 - 사용자 조회 실패")
+  void createReview_NotFoundUser() {
+    //given
+    given(userRepository.findById(anyString())).willReturn(Optional.empty());
 
-        //when & then
-        assertThatThrownBy(() -> reviewService.createReview(dto, customer.getUsername()))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("해당 사용자를 찾을 수 없습니다.");
-    }
+    ReviewCreateRequestDto dto = ReviewCreateRequestDto.builder()
+                                                       .orderId(order.getOrderId())
+                                                       .rating("5")
+                                                       .description("good")
+                                                       .build();
 
-    @Test
-    @DisplayName("리뷰 작성 테스트 - 주문 조회 실패")
-    void createReview_NotFoundOrder() {
-        //given
-        given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
-        given(orderRepository.findByOrderId(order.getOrderId())).willReturn(Optional.empty());
+    //when & then
+    assertThatThrownBy(() -> reviewService.createReview(dto, customer.getUsername())).isInstanceOf(
+        BusinessException.class).hasMessage("해당 유저를 찾을 수 없습니다.");
+  }
 
-        ReviewCreateRequestDto dto = ReviewCreateRequestDto.builder()
-                .orderId(order.getOrderId())
-                .rating("5")
-                .description("good")
-                .build();
+  @Test
+  @DisplayName("리뷰 작성 테스트 - 주문 조회 실패")
+  void createReview_NotFoundOrder() {
+    //given
+    given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
+    given(orderRepository.findById(order.getOrderId())).willReturn(Optional.empty());
 
-        //when & then
-        assertThatThrownBy(() -> reviewService.createReview(dto, customer.getUsername()))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("해당 주문 내역을 찾을 수 없습니다.");
-    }
+    ReviewCreateRequestDto dto = ReviewCreateRequestDto.builder()
+                                                       .orderId(order.getOrderId())
+                                                       .rating("5")
+                                                       .description("good")
+                                                       .build();
 
-    @Test
-    @DisplayName("리뷰 작성 테스트 - 이미 해당 주문에 대한 리뷰를 작성했던 경우")
-    void createReview_ExistReview() {
-        //given
-        given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
-        given(orderRepository.findByOrderId(order.getOrderId())).willReturn(Optional.of(order));
-        given(reviewRepository.findByOrder(order)).willReturn(Optional.of(review));
+    //when & then
+    assertThatThrownBy(() -> reviewService.createReview(dto, customer.getUsername())).isInstanceOf(
+        BusinessException.class).hasMessage("해당 주문을 찾을 수 없습니다.");
+  }
 
-        ReviewCreateRequestDto dto = ReviewCreateRequestDto.builder()
-                .orderId(order.getOrderId())
-                .rating("5")
-                .description("good")
-                .build();
+  @Test
+  @DisplayName("리뷰 작성 테스트 - 이미 해당 주문에 대한 리뷰를 작성했던 경우")
+  void createReview_ExistReview() {
+    //given
+    given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
+    given(orderRepository.findById(order.getOrderId())).willReturn(Optional.of(order));
+    given(reviewRepository.findByOrder(order)).willReturn(Optional.of(review));
 
-        //when & then
-        assertThatThrownBy(() -> reviewService.createReview(dto, customer.getUsername()))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("이미 해당 주문에 대해 리뷰를 작성했습니다.");
-    }
+    ReviewCreateRequestDto dto = ReviewCreateRequestDto.builder()
+                                                       .orderId(order.getOrderId())
+                                                       .rating("5")
+                                                       .description("good")
+                                                       .build();
 
-    @Test
-    @DisplayName("리뷰 조회 테스트-전체 조회")
-    void findAllReviews() {
-        //given
-        List<Review> reviews = List.of(review);
-        Page<Review> page = new PageImpl<>(reviews, pageable, 1);
-        given(reviewRepository.findAll(any(Pageable.class))).willReturn(page);
+    //when & then
+    assertThatThrownBy(() -> reviewService.createReview(dto,
+                                                        customer.getUsername())).isInstanceOf(BusinessException.class)
+                                                                                .hasMessage("이미 존재하는 리뷰입니다.");
+  }
 
-        //when & then
-        Page<ReviewResponseDto> result = reviewService.findAllReviews(pageable);
-        assertThat(result).hasSize(1);
-    }
+  @Test
+  @DisplayName("리뷰 조회 테스트-전체 조회")
+  void findAllReviews() {
+    //given
+    List<Review> reviews = List.of(review);
+    Page<Review> page = new PageImpl<>(reviews, pageable, 1);
+    given(reviewRepository.findAll(any(Pageable.class))).willReturn(page);
 
-    @Test
-    @DisplayName("리뷰 조회 테스트-상세 조회")
-    void findReviewById() {
-        //given
-        given(reviewRepository.findById(review.getReviewId())).willReturn(Optional.of(review));
+    //when & then
+    Page<ReviewResponseDto> result = reviewService.findAllReviews(pageable);
+    assertThat(result).hasSize(1);
+  }
 
-        //when & then
-        ReviewResponseDto result = reviewService.findReviewById(review.getReviewId());
-        assertThat(result.getReviewId()).isEqualTo(review.getReviewId());
-        assertThat(result.getRating()).isEqualTo(review.getRating().toPlainString());
-        assertThat(result.getDescription()).isEqualTo(review.getDescription());
-    }
+  @Test
+  @DisplayName("리뷰 조회 테스트-상세 조회")
+  void findReviewById() {
+    //given
+    given(reviewRepository.findById(review.getReviewId())).willReturn(Optional.of(review));
 
-    @Test
-    @DisplayName("리뷰 조회 테스트-작성자 필터링")
-    void findReviewByUser() {
-        //given
-        List<Review> reviews = List.of(review);
-        Slice<Review> slice = new SliceImpl<>(reviews, pageable, false);
+    //when & then
+    ReviewResponseDto result = reviewService.findReviewById(review.getReviewId());
+    assertThat(result.getReviewId()).isEqualTo(review.getReviewId());
+    assertThat(result.getRating()).isEqualTo(review.getRating().toPlainString());
+    assertThat(result.getDescription()).isEqualTo(review.getDescription());
+  }
 
-        given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
-        given(reviewRepository.findByUser(customer,pageable)).willReturn(slice);
+  @Test
+  @DisplayName("리뷰 조회 테스트-작성자 필터링")
+  void findReviewByUser() {
+    //given
+    List<Review> reviews = List.of(review);
+    Slice<Review> slice = new SliceImpl<>(reviews, pageable, false);
 
-        //when & then
-        Slice<ReviewResponseDto> result = reviewService.findMyReviews(customer.getUsername(),pageable);
-        assertThat(result).hasSize(1);
-    }
+    given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
+    given(reviewRepository.findByUser(customer, pageable)).willReturn(slice);
 
-    @Test
-    @DisplayName("리뷰 조회 테스트-매장별 필터링")
-    void findReviewByStore() {
-        //given
-        List<Review> reviews = List.of(review);
-        Slice<Review> slice = new SliceImpl<>(reviews, pageable, false);
+    //when & then
+    Slice<ReviewResponseDto> result = reviewService.findMyReviews(customer.getUsername(), pageable);
+    assertThat(result).hasSize(1);
+  }
 
-        given(reviewRepository.findByStoreId(any(UUID.class),eq(pageable))).willReturn(slice);
+  @Test
+  @DisplayName("리뷰 조회 테스트-매장별 필터링")
+  void findReviewByStore() {
+    //given
+    List<Review> reviews = List.of(review);
+    Slice<Review> slice = new SliceImpl<>(reviews, pageable, false);
 
-        //when & then
-        Slice<ReviewResponseDto> result = reviewService.findReviewsByStoreId(store.getStoreId(),pageable);
-        assertThat(result).hasSize(1);
-    }
+    given(reviewRepository.findByStoreId(any(UUID.class), eq(pageable))).willReturn(slice);
 
-    @Test
-    @DisplayName("리뷰 수정 테스트-정상처리")
-    void updateReview() throws AccessDeniedException {
-        //given
-        given(reviewRepository.findById(review.getReviewId())).willReturn(Optional.of(review));
-        given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
-        ReviewUpdateDto dto = ReviewUpdateDto.builder()
-                .rating("1")
-                .description("bad")
-                .build();
+    //when & then
+    Slice<ReviewResponseDto> result = reviewService.findReviewsByStoreId(store.getStoreId(), pageable);
+    assertThat(result).hasSize(1);
+  }
 
-        //when
-        reviewService.updateReview(review.getReviewId(), dto, customer.getUsername());
+  @Test
+  @DisplayName("리뷰 수정 테스트-정상처리")
+  void updateReview() throws
+                      AccessDeniedException {
+    //given
+    given(reviewRepository.findById(review.getReviewId())).willReturn(Optional.of(review));
+    given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
+    ReviewUpdateDto dto = ReviewUpdateDto.builder().rating("1").description("bad").build();
 
-        //then
-        ArgumentCaptor<Review> captor = ArgumentCaptor.forClass(Review.class);
-        verify(reviewRepository).save(captor.capture());
-        Review review = captor.getValue();
-        assertThat(review.getRating()).isEqualTo(dto.getRating());
-        assertThat(review.getDescription()).isEqualTo(dto.getDescription());
-    }
+    //when
+    reviewService.updateReview(review.getReviewId(), dto, customer.getUsername());
 
-    @Test
-    @DisplayName("리뷰 수정 테스트-사용자 탐색 실패")
-    void updateReview_NotFoundUser() {
-        //given
-        given(userRepository.findById(customer.getUsername())).willReturn(Optional.empty());
-        ReviewUpdateDto dto = ReviewUpdateDto.builder()
-                .rating("1")
-                .description("bad")
-                .build();
+    //then
+    ArgumentCaptor<Review> captor = ArgumentCaptor.forClass(Review.class);
+    verify(reviewRepository).save(captor.capture());
+    Review review = captor.getValue();
+    assertThat(review.getRating()).isEqualTo(dto.getRating());
+    assertThat(review.getDescription()).isEqualTo(dto.getDescription());
+  }
 
-        //when & then
-        assertThatThrownBy(() -> reviewService.updateReview(review.getReviewId(), dto, customer.getUsername()))
-                .hasMessage("해당 사용자를 찾을 수 없습니다.");
-    }
+  @Test
+  @DisplayName("리뷰 수정 테스트-사용자 탐색 실패")
+  void updateReview_NotFoundUser() {
+    //given
+    given(userRepository.findById(customer.getUsername())).willReturn(Optional.empty());
+    ReviewUpdateDto dto = ReviewUpdateDto.builder().rating("1").description("bad").build();
 
-    @Test
-    @DisplayName("리뷰 수정 테스트-리뷰 탐색 실패")
-    void updateReview_NotFoundReview() {
-        //given
-        given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
-        given(reviewRepository.findById(review.getReviewId())).willReturn(Optional.empty());
-        ReviewUpdateDto dto = ReviewUpdateDto.builder()
-                .rating("1")
-                .description("bad")
-                .build();
+    //when & then
+    assertThatThrownBy(() -> reviewService.updateReview(review.getReviewId(), dto, customer.getUsername())).hasMessage(
+        "해당 유저를 찾을 수 없습니다.");
+  }
 
-        //when & then
-        assertThatThrownBy(() -> reviewService.updateReview(review.getReviewId(), dto, customer.getUsername()))
-                .hasMessage("해당 리뷰를 찾을 수 없습니다.");
-    }
+  @Test
+  @DisplayName("리뷰 수정 테스트-리뷰 탐색 실패")
+  void updateReview_NotFoundReview() {
+    //given
+    given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
+    given(reviewRepository.findById(review.getReviewId())).willReturn(Optional.empty());
+    ReviewUpdateDto dto = ReviewUpdateDto.builder().rating("1").description("bad").build();
 
-    @Test
-    @DisplayName("리뷰 정상 삭제-정상처리")
-    void deleteReview() throws AccessDeniedException {
-        //given
-        given(reviewRepository.findById(review.getReviewId())).willReturn(Optional.of(review));
-        given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
+    //when & then
+    assertThatThrownBy(() -> reviewService.updateReview(review.getReviewId(), dto, customer.getUsername())).hasMessage(
+        "해당 리뷰를 찾을 수 없습니다.");
+  }
 
-        //when
-        reviewService.deleteReview(review.getReviewId(),customer.getUsername());
+  @Test
+  @DisplayName("리뷰 정상 삭제-정상처리")
+  void deleteReview() throws
+                      AccessDeniedException {
+    //given
+    given(reviewRepository.findById(review.getReviewId())).willReturn(Optional.of(review));
+    given(userRepository.findById(customer.getUsername())).willReturn(Optional.of(customer));
 
-        //then
-        ArgumentCaptor<Review> captor = ArgumentCaptor.forClass(Review.class);
-        verify(reviewRepository).save(captor.capture());
-        assertThat(captor.getValue().getDeletedAt()).isNotNull();
-    }
+    //when
+    reviewService.deleteReview(review.getReviewId(), customer.getUsername());
 
-    @Test
-    @DisplayName("리뷰 정상 삭제-리뷰 탐색 실패")
-    void deleteReview_NotFoundReview() {
-        //given
-        given(reviewRepository.findById(review.getReviewId())).willReturn(Optional.empty());
+    //then
+    ArgumentCaptor<Review> captor = ArgumentCaptor.forClass(Review.class);
+    verify(reviewRepository).save(captor.capture());
+    assertThat(captor.getValue().getDeletedAt()).isNotNull();
+  }
 
-        //when & then
-        assertThatThrownBy(() -> reviewService.deleteReview(review.getReviewId(),customer.getUsername()))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("해당 리뷰를 찾을 수 없습니다.");
-    }
+  @Test
+  @DisplayName("리뷰 정상 삭제-리뷰 탐색 실패")
+  void deleteReview_NotFoundReview() {
+    //given
+    given(reviewRepository.findById(review.getReviewId())).willReturn(Optional.empty());
+
+    //when & then
+    assertThatThrownBy(() -> reviewService.deleteReview(review.getReviewId(), customer.getUsername())).isInstanceOf(
+        BusinessException.class).hasMessage("해당 리뷰를 찾을 수 없습니다.");
+  }
 }
