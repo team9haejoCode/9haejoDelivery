@@ -22,7 +22,7 @@ http://13.220.5.41:8080 에서 api명세서를 참고하여 진행 가능
 - **빌드:** Gradle
 
 ## ERD
-<img width="1835" height="1710" alt="Image" src="https://github.com/user-attachments/assets/df8949d4-b54e-4afe-bef7-be068bdb6a0c" />
+<img width="1835" height="1710" alt="Image" src="https://github.com/user-attachments/assets/a41706a2-039a-462b-aa64-451fadb0ec6b" />
 
 ## Architecture
 <img width="800" alt="9haego_archipng" src="https://github.com/user-attachments/assets/e60cd118-5985-428b-b8f0-642fd5489dce" />
