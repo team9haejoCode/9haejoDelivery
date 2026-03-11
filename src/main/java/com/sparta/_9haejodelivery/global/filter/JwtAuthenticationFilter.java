@@ -26,89 +26,99 @@ import java.util.Map;
 @Slf4j(topic = "로그인 및 JWT 생성")
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
-    private final JwtUtil jwtUtil;
-    private final RefreshTokenRepository refreshTokenRepository;
+  private final JwtUtil jwtUtil;
+  private final RefreshTokenRepository refreshTokenRepository;
+  private final ObjectMapper mapper;
 
 
-    public JwtAuthenticationFilter(JwtUtil jwtUtil, RefreshTokenRepository refreshTokenRepository) {
-        this.jwtUtil = jwtUtil;
-        this.refreshTokenRepository = refreshTokenRepository;
-        setFilterProcessesUrl("/users/login");
+  public JwtAuthenticationFilter(JwtUtil jwtUtil, RefreshTokenRepository refreshTokenRepository, ObjectMapper mapper) {
+    this.jwtUtil = jwtUtil;
+    this.refreshTokenRepository = refreshTokenRepository;
+    this.mapper = mapper;
+    setFilterProcessesUrl("/users/login");
+  }
+
+  @Override
+  public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws
+                                                                                                        AuthenticationException {
+    try {
+      UserLoginRequestDto requestDto = mapper.readValue(request.getInputStream(), UserLoginRequestDto.class);
+
+      return getAuthenticationManager().authenticate(new UsernamePasswordAuthenticationToken(requestDto.getUsername(),
+                                                                                             requestDto.getPassword(),
+                                                                                             null));
+    } catch (IOException e) {
+      log.error(e.getMessage());
+      throw new RuntimeException(e.getMessage());
+    }
+  }
+
+
+  @Override
+  protected void successfulAuthentication(
+      HttpServletRequest request, HttpServletResponse response, FilterChain chain,
+      Authentication authResult
+  ) throws
+    IOException {
+    User user = ((UserDetailsImpl) authResult.getPrincipal()).getUser();
+
+    if (user.getDeletedAt() != null) {
+      sendErrorResponse(response, ErrorCode.ALREADY_WITHDRAWN);
+      return;
     }
 
-    @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-        try {
-            UserLoginRequestDto requestDto = new ObjectMapper().readValue(request.getInputStream(), UserLoginRequestDto.class);
+    String username = user.getUsername();
+    UserRole role = user.getRole();
 
-            return getAuthenticationManager().authenticate(
-                    new UsernamePasswordAuthenticationToken(requestDto.getUsername(), requestDto.getPassword(), null)
-            );
-        } catch (IOException e) {
-            log.error(e.getMessage());
-            throw new RuntimeException(e.getMessage());
-        }
-    }
+    String accessToken = jwtUtil.createAccessToken(username, role);
+    String refreshToken = jwtUtil.createRefreshToken(username);
 
+    refreshTokenRepository.findById(username).ifPresentOrElse(
+        // 1. 이미 있으면? 값만 업데이트
+        (existingToken) -> {
+          existingToken.updateToken(refreshToken);
+          refreshTokenRepository.save(existingToken);
+        },
+        // 2. 없으면? 새로 만들어서 저장
+        () -> {
+          RefreshToken newToken = new RefreshToken(username, refreshToken);
+          refreshTokenRepository.save(newToken);
+        });
 
-    @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException {
-        User user = ((UserDetailsImpl) authResult.getPrincipal()).getUser();
+    response.addHeader(JwtUtil.AUTHORIZATION_HEADER, JwtUtil.BEARER_PREFIX + accessToken);
 
-        if (user.getDeletedAt() != null) {
-            sendErrorResponse(response, ErrorCode.ALREADY_WITHDRAWN);
-            return;
-        }
+    ApiResponse<Map<String, String>> apiResponse = ApiResponse.success(HttpStatus.OK,
+                                                                       "로그인이 성공적으로 처리되었습니다.",
+                                                                       Map.of("accessToken",
+                                                                              JwtUtil.BEARER_PREFIX + accessToken,
+                                                                              "refreshToken",
+                                                                              refreshToken));
 
-        String username = user.getUsername();
-        UserRole role = user.getRole();
-
-        String accessToken = jwtUtil.createAccessToken(username, role);
-        String refreshToken = jwtUtil.createRefreshToken(username);
-
-        refreshTokenRepository.findById(username)
-                .ifPresentOrElse(
-                        // 1. 이미 있으면? 값만 업데이트
-                        (existingToken) -> {
-                            existingToken.updateToken(refreshToken);
-                            refreshTokenRepository.save(existingToken);
-                        },
-                        // 2. 없으면? 새로 만들어서 저장
-                        () -> {
-                            RefreshToken newToken = new RefreshToken(username, refreshToken);
-                            refreshTokenRepository.save(newToken);
-                        }
-                );
-
-        response.addHeader(JwtUtil.AUTHORIZATION_HEADER, accessToken);
-
-        ApiResponse<Map<String, String>> apiResponse = ApiResponse.success(
-                HttpStatus.OK,
-                "로그인이 성공적으로 처리되었습니다.",
-                Map.of("accessToken", accessToken,
-                        "refreshToken", refreshToken)
-        );
-
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        new ObjectMapper().writeValue(response.getWriter(), apiResponse);
-    }
+    response.setContentType("application/json");
+    response.setCharacterEncoding("UTF-8");
+    mapper.writeValue(response.getWriter(), apiResponse);
+  }
 
 
-    @Override
-    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {
-        sendErrorResponse(response, ErrorCode.INVALID_INPUT_VALUE);
-    }
+  @Override
+  protected void unsuccessfulAuthentication(
+      HttpServletRequest request, HttpServletResponse response,
+      AuthenticationException failed
+  ) throws
+    IOException {
+    sendErrorResponse(response, ErrorCode.INVALID_INPUT_VALUE);
+  }
 
-    private void sendErrorResponse(HttpServletResponse response, ErrorCode errorCode) throws IOException {
-        response.setStatus(errorCode.getHttpStatus().value());
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
+  private void sendErrorResponse(HttpServletResponse response, ErrorCode errorCode) throws
+                                                                                    IOException {
+    response.setStatus(errorCode.getHttpStatus().value());
+    response.setContentType("application/json");
+    response.setCharacterEncoding("UTF-8");
 
-        ApiResponse<Void> apiResponse = ApiResponse.fail(errorCode.getHttpStatus(), errorCode.getMessage());
+    ApiResponse<Void> apiResponse = ApiResponse.fail(errorCode.getHttpStatus(), errorCode.getMessage());
 
-        new ObjectMapper().writeValue(response.getWriter(), apiResponse);
-    }
+    mapper.writeValue(response.getWriter(), apiResponse);
+  }
 
 
 }
