@@ -28,32 +28,34 @@ http://13.220.5.41:8080 에서 api명세서를 참고하여 진행 가능
 <img width="800" alt="9haego_archipng" src="https://github.com/user-attachments/assets/e60cd118-5985-428b-b8f0-642fd5489dce" />
 
 ## API 명세서
+-swagger
+http://13.220.5.41:8080/swagger-ui/index.html
 
 - 매장, 카테고리 API
 
   1️⃣ 매장, 카테고리 관리 API
 
-  | Method | Endpoint | 설명 |
-            | --- | --- | --- |
-  | POST | `/stores` | 매장 등록 |
-  | GET | `/stores/{storeId}` | 매장 상세 조회 |
-  | PATCH | `/stores/{storeId}` | 매장 정보 수정 |
-  | DELETE | `/stores/{storeId}` | 매장 삭제 |
+| Method | Endpoint | 설명 |
+| :--- | :--- | :--- |
+| POST | `/stores` | 매장 등록 |
+| GET | `/stores/{storeId}` | 매장 상세 조회 |
+| PATCH | `/stores/{storeId}` | 매장 정보 수정 |
+| DELETE | `/stores/{storeId}` | 매장 삭제 |
 
   2️⃣ 매장 조회 API
 
-  | Method | Endpoint | 설명 |
-            | --- | --- | --- |
-  | GET | `/stores&page=0&size=30&sortDirection=DESC` | 전체 매장 조회 |
-  | GET | `/stores?category={category}&page=0&size=30&sortDirection=DESC` | 카테고리별 매장 조회 |
-  | GET | `/stores?sigungu={sigungu}&page=0&size=30&sortDirection=DESC` | 지역(시군구)별 매장 조회 |
+ | Method | Endpoint | 설명 |
+ | :--- | :--- | :--- |
+ | GET | `/stores&page=0&size=30&sortDirection=DESC` | 전체 매장 조회 |
+ | GET | `/stores?category={category}&page=0&size=30&sortDirection=DESC` | 카테고리별 매장 조회 |
+ | GET | `/stores?sigungu={sigungu}&page=0&size=30&sortDirection=DESC` | 지역(시군구)별 매장 조회 |
 
-  | Method | Endpoint | 설명 |
-            | --- | --- | --- |
-  | POST | `/category` | 카테고리 생성 |
-  | GET | `/category` | 카테고리 조회 |
-  | PATCH | `/category/{categoryId}` | 카테고리 수정 |
-  | DELETE | `/category/{categoryId}` | 카테고리 삭제 |
+| Method | Endpoint | 설명 |
+| :--- | :--- | :--- |
+| POST | `/category` | 카테고리 생성 |
+| GET | `/category` | 카테고리 조회 |
+| PATCH | `/category/{categoryId}` | 카테고리 수정 |
+| DELETE | `/category/{categoryId}` | 카테고리 삭제 |
 
   ➡️ **카테고리 및 지역 기준 필터 조회 지원**
 
@@ -62,17 +64,17 @@ http://13.220.5.41:8080 에서 api명세서를 참고하여 진행 가능
 
 - 유저, 토큰 API
 
-  | Method | Endpoint | 설명 |
-        | --- | --- | --- |
-  | POST | /users/signup | 회원가입 |
-  | POST | /users/login | 로그인 |
-  | POST | /users/logout | 로그아웃 |
-  | PATCH | /users/profile/edit | 유저 정보 수정 |
-  | DELETE | /users/withdraw | 유저 탈퇴 |
-  | DELETE | /users/withdraw/{username} | 유저 탈퇴(관리자) |
-  | GET | /users&page=0&size=10&sortDirection=DESC | 전체 유저 조회(관리자) |
-  | GET | users/{username}/profile | 유저 프로필 조회(관리자) |
-  | GET | /users/profile | 유저 프로필 조회 |
+| Method | Endpoint | 설명 |
+| :--- | :--- | :--- |
+| POST | `/users/signup` | 회원가입 |
+| POST | `/users/login` | 로그인 |
+| POST | `/users/logout` | 로그아웃 |
+| PATCH | `/users/profile` | 내 프로필 정보 수정 |
+| DELETE | `/users/withdraw` | 회원 탈퇴 (본인) |
+| DELETE | `/users/admin/withdraw/{username}` | 유저 강제 탈퇴 (관리자) |
+| GET | `/users?page=0&size=10&sort=createdAt,desc` | 전체 유저 조회 (관리자) |
+| GET | `/users/{username}/profile` | 특정 유저 프로필 조회 (관리자) |
+| GET | `/users/profile` | 내 프로필 조회 |
 
 <br>
 <br>
