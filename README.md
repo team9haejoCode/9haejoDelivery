@@ -24,4 +24,7 @@
 ## ERD
 <img width="1522" height="1664" alt="image" src="https://github.com/user-attachments/assets/3adf239d-8f55-4013-9854-8a3a6225bd46" />
 
+## Architecture
+<img width="800" alt="9haego_archipng" src="https://github.com/user-attachments/assets/e60cd118-5985-428b-b8f0-642fd5489dce" />
+
 ## API 명세서
