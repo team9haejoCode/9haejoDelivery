@@ -1,7 +1,11 @@
 package com.sparta._9haejodelivery.global.jwt;
 
 import com.sparta._9haejodelivery.domain.UserRole;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,34 +21,32 @@ import java.util.Date;
 @Slf4j(topic = "JWT 관련 로그")
 @Component
 public class JwtUtil {
-    public static final String AUTHORIZATION_HEADER = "Authorization";
-    public static final String AUTHORIZATION_KEY = "auth";
-    public static final String BEARER_PREFIX = "Bearer ";
-    public static final long ACCESS_TOKEN_TIME = 30 * 60 * 1000L; // 30분
-    public static final long REFRESH_TOKEN_TIME =7 * 24 * 60 * 60 * 1000L; //일주일
+  public static final String AUTHORIZATION_HEADER = "Authorization";
+  public static final String AUTHORIZATION_KEY = "auth";
+  public static final String BEARER_PREFIX = "Bearer ";
+  public static final long ACCESS_TOKEN_TIME = 30 * 60 * 1000L; // 30분
+  public static final long REFRESH_TOKEN_TIME = 7 * 24 * 60 * 60 * 1000L; //일주일
 
-    @Value("${jwt.secret.key}")
-    private String secretKey;
-    private SecretKey key;
+  @Value("${JWT_SECRET_KEY}")
+  private String secretKey;
+  private SecretKey key;
 
-    @PostConstruct
-    public void init() {
-        byte[] bytes = Base64.getDecoder().decode(secretKey);
-        key = Keys.hmacShaKeyFor(bytes);
-    }
+  @PostConstruct
+  public void init() {
+      byte[] bytes = Base64.getDecoder().decode(secretKey.trim());
+      key = Keys.hmacShaKeyFor(bytes);
+  }
 
     public String createAccessToken(String username, UserRole role) {
         Date date = new Date();
 
-        return BEARER_PREFIX +
-                Jwts.builder()
-                        .subject(username) // setSubject -> subject
-                        .claim(AUTHORIZATION_KEY, role.getAuthority()) // 권한 정보
-                        .expiration(new Date(date.getTime() + ACCESS_TOKEN_TIME)) // setExpiration -> expiration
-                        .issuedAt(date) // setIssuedAt -> issuedAt
-                        .signWith(key) // 알고리즘은 key 설정에 따라 자동 선택됨
-                        .compact();
-    }
+    return Jwts.builder().subject(username) // setSubject -> subject
+               .claim(AUTHORIZATION_KEY, role.getAuthority()) // 권한 정보
+               .expiration(new Date(date.getTime() + ACCESS_TOKEN_TIME)) // setExpiration -> expiration
+               .issuedAt(date) // setIssuedAt -> issuedAt
+               .signWith(key) // 알고리즘은 key 설정에 따라 자동 선택됨
+               .compact();
+  }
 
     public String createRefreshToken(String username){
         Date date = new Date();
