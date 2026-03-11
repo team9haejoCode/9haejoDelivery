@@ -12,7 +12,7 @@
 | 백가은 | USER & AUTH | 회원 관리, JWT/Security 기반 인증/인가 |
 | 신단비 | ORDER | ORDER CRUD |
 ## 서비스 구성 및 실행 방법
-
+http://13.220.5.41:8080 에서 api명세서를 참고하여 진행 가능
 ##  기술 스택
 - **언어:** Java 17
 - **프레임워크:** Spring Boot 3.x
